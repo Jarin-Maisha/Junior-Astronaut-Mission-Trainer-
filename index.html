@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junior Astronaut Mission Trainer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================================================
+         BACKGROUND SPACE ELEMENTS
+    ========================================================== -->
+
+    <div class="space-background">
+        <div class="stars stars-one"></div>
+        <div class="stars stars-two"></div>
+
+        <div class="planet planet-one"></div>
+        <div class="planet planet-two"></div>
+
+        <div class="moon-background">🌙</div>
+
+        <div class="shooting-star shooting-one"></div>
+        <div class="shooting-star shooting-two"></div>
+
+        <div class="floating-rocket">🚀</div>
+    </div>
+
+
+    <!-- =========================================================
+         GAME CONTAINER
+    ========================================================== -->
+
+    <main id="game">
+
+        <!-- =====================================================
+             OPENING SCREEN
+        ====================================================== -->
+
+        <section id="openingScreen" class="screen active">
+
+            <div class="opening-content">
+
+                <div class="title-badge">
+                    🚀 NASA-STYLE TRAINING ADVENTURE
+                </div>
+
+                <h1>
+                    JUNIOR ASTRONAUT
+                    <span>MISSION TRAINER</span>
+                </h1>
+
+                <p class="opening-subtitle">
+                    Train on Earth • Explore the Moon • Return Safely
+                </p>
+
+                <div class="earth-launch-area">
+
+                    <div class="earth">
+                        <div class="earth-land land-one"></div>
+                        <div class="earth-land land-two"></div>
+                        <div class="earth-land land-three"></div>
+                    </div>
+
+                    <div id="launchRocket" class="launch-rocket">
+                        🚀
+                    </div>
+
+                    <div class="launch-flame">
+                        🔥
+                    </div>
+
+                </div>
+
+                <button id="startMissionBtn" class="primary-btn">
+                    START MISSION 🚀
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             COUNTDOWN SCREEN
+        ====================================================== -->
+
+        <section id="countdownScreen" class="screen">
+
+            <div class="countdown-content">
+
+                <div class="countdown-rocket">
+                    🚀
+                </div>
+
+                <div id="countdownNumber" class="countdown-number">
+                    3
+                </div>
+
+                <p id="countdownText">
+                    Preparing launch...
+                </p>
+
+                <h2>
+                    Are you ready for the mission buddy?
+                </h2>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             ASTRONAUT CREATION
+        ====================================================== -->
+
+        <section id="creationScreen" class="screen">
+
+            <div class="page-heading">
+
+                <span class="section-icon">🧑‍🚀</span>
+
+                <div>
+                    <h2>Create Your Astronaut</h2>
+                    <p>Every great mission starts with a great astronaut!</p>
+                </div>
+
+            </div>
+
+
+            <div class="creation-layout">
+
+                <!-- Character Preview -->
+
+                <div class="character-preview-card">
+
+                    <div class="preview-space">
+
+                        <div id="characterPreview"
+                             class="astronaut-preview">
+                            🐼
+                        </div>
+
+                        <div class="preview-stars">
+                            ✦ ✧ ✦
+                        </div>
+
+                    </div>
+
+                    <h3 id="previewName">
+                        Your Astronaut
+                    </h3>
+
+                    <p id="previewModeText">
+                        Choose your mission mode
+                    </p>
+
+                </div>
+
+
+                <!-- Creation Controls -->
+
+                <div class="creation-card">
+
+                    <label for="astronautName">
+                        Astronaut Name
+                    </label>
+
+                    <input
+                        id="astronautName"
+                        type="text"
+                        maxlength="18"
+                        placeholder="Enter your name"
+                    >
+
+
+                    <h3>
+                        Choose Your Astronaut
+                    </h3>
+
+                    <div id="characterGrid"
+                         class="character-grid">
+
+                        <!-- Generated by JS -->
+
+                    </div>
+
+
+                    <h3>
+                        Mission Mode
+                    </h3>
+
+                    <div class="mode-selection">
+
+                        <button
+                            class="mode-card selected"
+                            data-mode="basic">
+
+                            <span class="mode-icon">🌟</span>
+
+                            <strong>Basic</strong>
+
+                            <small>
+                                No time limit
+                            </small>
+
+                        </button>
+
+
+                        <button
+                            class="mode-card"
+                            data-mode="advanced">
+
+                            <span class="mode-icon">🚀</span>
+
+                            <strong>Advanced</strong>
+
+                            <small>
+                                60 seconds per task
+                            </small>
+
+                        </button>
+
+                    </div>
+
+
+                    <button id="continueCreationBtn"
+                            class="primary-btn full-btn">
+
+                        Continue to Mission 🚀
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             LEVEL SELECTION
+        ====================================================== -->
+
+        <section id="levelScreen" class="screen">
+
+            <div class="page-heading centered">
+
+                <span class="section-icon">🌌</span>
+
+                <div>
+                    <h2>Mission Map</h2>
+                    <p>Choose your next training destination.</p>
+                </div>
+
+            </div>
+
+
+            <!-- Player HUD -->
+
+            <div class="player-hud">
+
+                <div class="player-mini">
+
+                    <span id="hudCharacter">🐼</span>
+
+                    <div>
+                        <strong id="hudName">
+                            Astronaut
+                        </strong>
+
+                        <small id="hudMode">
+                            Basic Mode
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-box">
+
+                    <span>⚡ Energy</span>
+
+                    <div class="stat-bar">
+                        <div id="energyBar"
+                             class="energy-fill"></div>
+                    </div>
+
+                    <strong id="energyText">
+                        100
+                    </strong>
+
+                </div>
+
+
+                <div class="stat-box">
+
+                    <span>⭐ Experience</span>
+
+                    <div class="stat-bar">
+                        <div id="xpBar"
+                             class="xp-fill"></div>
+                    </div>
+
+                    <strong id="xpText">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div id="levelGrid"
+                 class="level-grid">
+
+                <!-- Generated by JS -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TASK SELECTION
+        ====================================================== -->
+
+        <section id="taskScreen" class="screen">
+
+            <button id="backToLevelsBtn"
+                    class="back-btn">
+                ← Mission Map
+            </button>
+
+
+            <div class="task-heading">
+
+                <div id="taskLevelIcon"
+                     class="large-icon">
+                    🌍
+                </div>
+
+                <div>
+
+                    <span id="taskLevelLabel">
+                        LEVEL 1
+                    </span>
+
+                    <h2 id="taskLevelTitle">
+                        Workshop / Astronaut Training
+                    </h2>
+
+                    <p id="taskLevelDescription">
+                        Complete your astronaut training.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div id="taskGrid"
+                 class="task-grid">
+
+                <!-- Generated by JS -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TASK PLAY SCREEN
+        ====================================================== -->
+
+        <section id="playScreen" class="screen">
+
+            <!-- Top HUD -->
+
+            <div class="game-topbar">
+
+                <button id="backToTasksBtn"
+                        class="back-btn">
+                    ← Tasks
+                </button>
+
+                <div class="play-title">
+
+                    <span id="playLevel">
+                        LEVEL 1
+                    </span>
+
+                    <strong id="playTask">
+                        Spacecraft Systems Training
+                    </strong>
+
+                </div>
+
+
+                <div class="play-stats">
+
+                    <div>
+                        ⚡
+                        <span id="playEnergy">
+                            100
+                        </span>
+                    </div>
+
+                    <div>
+                        ⭐
+                        <span id="playXP">
+                            0
+                        </span>
+                    </div>
+
+                    <div id="timerContainer"
+                         class="timer-container hidden">
+
+                        ⏱️
+                        <span id="taskTimer">
+                            60
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Robot Guide -->
+
+            <div class="robot-guide">
+
+                <div class="robot-avatar">
+                    🤖
+                </div>
+
+                <div>
+
+                    <strong>
+                        Astro-Bot
+                    </strong>
+
+                    <p id="robotMessage">
+                        Welcome, astronaut! Let's begin.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Task Information -->
+
+            <div class="challenge-header">
+
+                <div>
+
+                    <span id="challengeTaskLabel">
+                        TASK 1A
+                    </span>
+
+                    <h2 id="challengeTitle">
+                        Match the Systems
+                    </h2>
+
+                    <p id="challengeInstruction">
+                        Select a system and then select its matching port.
+                    </p>
+
+                </div>
+
+
+                <div class="subtask-progress">
+
+                    <span id="subtaskCounter">
+                        1 / 3
+                    </span>
+
+                    <div class="mini-progress">
+                        <div id="subtaskProgressFill"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Challenge Area -->
+
+            <div id="challengeArea"
+                 class="challenge-area">
+
+                <!-- Generated by JS -->
+
+            </div>
+
+
+            <!-- Feedback -->
+
+            <div id="feedback"
+                 class="feedback hidden">
+
+                <span id="feedbackIcon">
+                    ⭐
+                </span>
+
+                <span id="feedbackText">
+                    Great job!
+                </span>
+
+            </div>
+
+
+            <button id="nextSubtaskBtn"
+                    class="primary-btn next-btn hidden">
+
+                Continue →
+
+            </button>
+
+        </section>
+
+
+        <!-- =====================================================
+             COMPLETION MODAL
+        ====================================================== -->
+
+        <div id="messageModal"
+             class="modal hidden">
+
+            <div class="modal-card">
+
+                <div id="modalIcon"
+                     class="modal-icon">
+                    🎉
+                </div>
+
+                <h2 id="modalTitle">
+                    Amazing!
+                </h2>
+
+                <p id="modalText">
+                    Great work, astronaut!
+                </p>
+
+                <button id="modalBtn"
+                        class="primary-btn">
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             FINAL MISSION COMPLETE
+        ====================================================== -->
+
+        <section id="finalScreen"
+                 class="screen">
+
+            <div class="final-space">
+
+                <div class="final-earth">
+                    🌍
+                </div>
+
+                <div class="final-rocket">
+                    🚀
+                </div>
+
+                <div class="final-stars">
+                    ✦ ✧ ⭐ ✦ ✧ ⭐
+                </div>
+
+            </div>
+
+
+            <div class="final-content">
+
+                <div class="mission-complete-badge">
+                    🏆 MISSION COMPLETE
+                </div>
+
+                <h1>
+                    YOU MADE IT HOME!
+                </h1>
+
+                <p>
+                    Congratulations, Junior Astronaut!
+                    You trained on Earth, survived the Moon,
+                    handled emergencies, and safely returned home.
+                </p>
+
+                <div class="final-stats">
+
+                    <div>
+                        <span>⭐</span>
+                        <strong id="finalXP">0</strong>
+                        <small>Experience</small>
+                    </div>
+
+                    <div>
+                        <span>🚀</span>
+                        <strong>3</strong>
+                        <small>Levels Completed</small>
+                    </div>
+
+                    <div>
+                        <span>🧑‍🚀</span>
+                        <strong id="finalName">
+                            Astronaut
+                        </strong>
+                        <small>Mission Hero</small>
+                    </div>
+
+                </div>
+
+
+                <button id="playAgainBtn"
+                        class="primary-btn">
+
+                    Play Mission Again 🚀
+
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
