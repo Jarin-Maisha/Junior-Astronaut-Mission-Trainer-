@@ -849,7 +849,7 @@ input:focus {
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(2, 1fr);
 
     gap: 15px;
 
@@ -907,15 +907,6 @@ input:focus {
             90deg,
             #ffd45e,
             #ff9d54
-        );
-}
-
-.immunity-fill {
-    background:
-        linear-gradient(
-            90deg,
-            #61e8b0,
-            #52d7ed
         );
 }
 
@@ -1191,11 +1182,19 @@ input:focus {
     font-size: 28px;
 }
 
+
+/*
+   HUD
+   Immunity has been removed.
+   The HUD now contains:
+   Player | Energy | XP
+*/
+
 .hud {
     display: grid;
 
     grid-template-columns:
-        1.2fr 1fr 1fr 0.6fr;
+        1.4fr 1fr 0.6fr;
 
     gap: 10px;
 
@@ -1410,9 +1409,18 @@ input:focus {
     font-size: 25px;
 }
 
+
+/*
+   TIMER
+   Advanced mode uses the circular timer.
+   Basic mode gets the .no-timer class from JavaScript.
+*/
+
 .task-timer {
     width: 65px;
     height: 65px;
+
+    flex-shrink: 0;
 
     border-radius: 50%;
 
@@ -1423,10 +1431,15 @@ input:focus {
         2px solid var(--lavender);
 
     display: grid;
+
     place-items: center;
 
     box-shadow:
         0 0 20px rgba(128, 102, 201, 0.25);
+
+    transition:
+        opacity 0.25s,
+        transform 0.25s;
 }
 
 .task-timer span {
@@ -1438,6 +1451,15 @@ input:focus {
 
     font-size: 20px;
 }
+
+.task-timer.no-timer {
+    display: none;
+}
+
+
+/* =========================================================
+   GAMEPLAY HUD
+========================================================= */
 
 .gameplay-hud {
     display: flex;
@@ -1477,6 +1499,11 @@ input:focus {
 
     color: var(--yellow);
 }
+
+
+/* =========================================================
+   GAME WORLD
+========================================================= */
 
 .game-world {
     position: relative;
@@ -2572,6 +2599,27 @@ input[type="range"] {
 
 
 /* =========================================================
+   BASIC MODE
+   No time limitation.
+========================================================= */
+
+.basic-mode .task-timer,
+.task-timer.no-timer {
+    display: none;
+}
+
+
+/* =========================================================
+   ADVANCED MODE
+   Timer remains visible and active.
+========================================================= */
+
+.advanced-mode .task-timer {
+    display: grid;
+}
+
+
+/* =========================================================
    RESPONSIVE
 ========================================================= */
 
@@ -2674,5 +2722,14 @@ input[type="range"] {
 
     .robot {
         align-items: flex-start;
+    }
+
+    .task-timer {
+        width: 55px;
+        height: 55px;
+    }
+
+    .task-timer strong {
+        font-size: 17px;
     }
 }

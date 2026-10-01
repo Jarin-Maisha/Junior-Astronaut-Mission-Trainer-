@@ -3,6 +3,8 @@
    Main Game Logic
 ========================================================= */
 
+document.addEventListener("DOMContentLoaded", () => {
+
 
 /* =========================================================
    CHARACTER DATA
@@ -13,7 +15,6 @@ const characters = [
     {
         name: "Luna Bunny",
         emoji: "🐰",
-        immunity: 4,
         technical: 3,
         endurance: 5,
         suit: "Pink Suit"
@@ -22,7 +23,6 @@ const characters = [
     {
         name: "Nova Cat",
         emoji: "🐱",
-        immunity: 3,
         technical: 5,
         endurance: 3,
         suit: "Purple Suit"
@@ -31,7 +31,6 @@ const characters = [
     {
         name: "Orbit Panda",
         emoji: "🐼",
-        immunity: 5,
         technical: 3,
         endurance: 4,
         suit: "Lavender Suit"
@@ -40,7 +39,6 @@ const characters = [
     {
         name: "Comet Fox",
         emoji: "🦊",
-        immunity: 3,
         technical: 4,
         endurance: 5,
         suit: "Light Blue Suit"
@@ -49,7 +47,6 @@ const characters = [
     {
         name: "Cosmo Bear",
         emoji: "🐻",
-        immunity: 5,
         technical: 4,
         endurance: 3,
         suit: "Grey Suit"
@@ -58,7 +55,6 @@ const characters = [
     {
         name: "Astro Pup",
         emoji: "🐶",
-        immunity: 4,
         technical: 5,
         endurance: 4,
         suit: "White Suit"
@@ -225,7 +221,6 @@ const levels = {
 
 const game = {
 
-    traineeId: "",
     name: "",
 
     characterIndex: 0,
@@ -233,7 +228,7 @@ const game = {
     mode: "basic",
 
     energy: 100,
-    immunity: 100,
+
     experience: 0,
 
     unlockedLevel: 1,
@@ -245,10 +240,13 @@ const game = {
     },
 
     currentLevel: 1,
+
     currentTask: 0,
+
     currentSubtask: 0,
 
     timer: 60,
+
     timerInterval: null,
 
     taskEnergySpent: 0,
@@ -265,7 +263,34 @@ const game = {
 ========================================================= */
 
 function $(id) {
+
     return document.getElementById(id);
+
+}
+
+
+function safeText(id, value) {
+
+    const element = $(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+
+}
+
+
+function safeBar(id, value) {
+
+    const element = $(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.style.width =
+        `${Math.max(0, Math.min(100, value))}%`;
+
 }
 
 
@@ -274,15 +299,108 @@ function showScreen(id) {
     document
         .querySelectorAll(".screen")
         .forEach(screen => {
+
             screen.classList.remove("active");
+
         });
 
-    $(id).classList.add("active");
+    const screen = $(id);
+
+    if (!screen) {
+        return;
+    }
+
+    screen.classList.add("active");
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
+
+}
+
+
+/* =========================================================
+   OLD UI CLEANUP
+========================================================= */
+
+function hideUnusedUI() {
+
+    /*
+       Immunity is completely removed from gameplay.
+       If old immunity elements still exist in HTML,
+       hide them.
+    */
+
+    const immunityIDs = [
+
+        "levelImmunityBar",
+        "levelImmunityText",
+
+        "immunityBar",
+        "immunityText",
+
+        "gameImmunityBar",
+        "gameImmunityText"
+
+    ];
+
+    immunityIDs.forEach(id => {
+
+        const element = $(id);
+
+        if (!element) {
+            return;
+        }
+
+        const parent =
+            element.closest(
+                ".stat-card, .stat-item, .hud-stat, .bar-container"
+            );
+
+        if (parent) {
+            parent.style.display = "none";
+        } else {
+            element.style.display = "none";
+        }
+
+    });
+
+
+    /*
+       Trainee ID is no longer required.
+       Hide old ID fields if they are still in the HTML.
+    */
+
+    const traineeIDs = [
+
+        "traineeId",
+        "profileId",
+        "hudId"
+
+    ];
+
+    traineeIDs.forEach(id => {
+
+        const element = $(id);
+
+        if (!element) {
+            return;
+        }
+
+        const parent =
+            element.closest(
+                ".input-group, .profile-stat, .hud-stat"
+            );
+
+        if (parent) {
+            parent.style.display = "none";
+        } else {
+            element.style.display = "none";
+        }
+
+    });
+
 }
 
 
@@ -292,15 +410,20 @@ function showScreen(id) {
 
 function createShootingStar() {
 
+    const container =
+        $("shootingStars");
+
+    if (!container) {
+        return;
+    }
+
     const star =
         document.createElement("div");
 
-    star.className = "shooting-star";
+    star.className =
+        "shooting-star";
 
-    const side =
-        Math.random();
-
-    if (side < 0.5) {
+    if (Math.random() < 0.5) {
 
         star.style.right =
             `${Math.random() * 25 + 5}%`;
@@ -318,13 +441,19 @@ function createShootingStar() {
 
         star.style.transform =
             "rotate(35deg)";
+
     }
 
-    $("shootingStars").appendChild(star);
+    container.appendChild(star);
 
     setTimeout(() => {
-        star.remove();
+
+        if (star.parentNode) {
+            star.remove();
+        }
+
     }, 2000);
+
 }
 
 
@@ -338,29 +467,51 @@ setInterval(
    START SCREEN
 ========================================================= */
 
-$("startButton").addEventListener(
-    "click",
-    startLaunchSequence
-);
+const startButton =
+    $("startButton");
+
+if (startButton) {
+
+    startButton.addEventListener(
+        "click",
+        startLaunchSequence
+    );
+
+}
 
 
 function startLaunchSequence() {
 
-    showScreen("countdownScreen");
+    showScreen(
+        "countdownScreen"
+    );
 
     const rocket =
         $("countdownRocket");
 
-    rocket.style.transform =
-        "translateY(0)";
+    if (rocket) {
+
+        rocket.style.transform =
+            "translateY(0)";
+
+    }
 
     let number = 3;
 
-    $("countdownNumber").textContent =
-        number;
+    safeText(
+        "countdownNumber",
+        number
+    );
 
-    $("countdownCaption").textContent =
-        "Prepare for launch!";
+    safeText(
+        "countdownCaption",
+        "Prepare for launch!"
+    );
+
+    safeText(
+        "countdownMessage",
+        ""
+    );
 
     const interval =
         setInterval(() => {
@@ -369,32 +520,51 @@ function startLaunchSequence() {
 
             if (number > 0) {
 
-                $("countdownNumber").textContent =
-                    number;
+                safeText(
+                    "countdownNumber",
+                    number
+                );
 
-                $("countdownNumber").style.animation =
-                    "none";
+                const numberElement =
+                    $("countdownNumber");
 
-                void $("countdownNumber").offsetWidth;
+                if (numberElement) {
 
-                $("countdownNumber").style.animation =
-                    "countdownPop 1s ease";
+                    numberElement.style.animation =
+                        "none";
+
+                    void numberElement.offsetWidth;
+
+                    numberElement.style.animation =
+                        "countdownPop 1s ease";
+
+                }
 
             } else {
 
                 clearInterval(interval);
 
-                $("countdownNumber").textContent =
-                    "🚀";
+                safeText(
+                    "countdownNumber",
+                    "🚀"
+                );
 
-                $("countdownCaption").textContent =
-                    "Are you ready for the mission buddy?";
+                safeText(
+                    "countdownCaption",
+                    "Are you ready for the mission buddy?"
+                );
 
-                $("countdownMessage").textContent =
-                    "Launching toward the Moon...";
+                safeText(
+                    "countdownMessage",
+                    "Launching toward the Moon..."
+                );
 
-                rocket.style.transform =
-                    "translateY(-300px)";
+                if (rocket) {
+
+                    rocket.style.transform =
+                        "translateY(-300px)";
+
+                }
 
                 setTimeout(() => {
 
@@ -407,6 +577,7 @@ function startLaunchSequence() {
             }
 
         }, 1000);
+
 }
 
 
@@ -425,16 +596,29 @@ document
                 const index =
                     Number(button.dataset.index);
 
+                if (
+                    Number.isNaN(index) ||
+                    !characters[index]
+                ) {
+                    return;
+                }
+
                 game.characterIndex =
                     index;
 
                 document
                     .querySelectorAll(".character-choice")
-                    .forEach(b =>
-                        b.classList.remove("selected")
-                    );
+                    .forEach(b => {
 
-                button.classList.add("selected");
+                        b.classList.remove(
+                            "selected"
+                        );
+
+                    });
+
+                button.classList.add(
+                    "selected"
+                );
 
                 updateCharacterPreview();
 
@@ -449,29 +633,40 @@ function updateCharacterPreview() {
     const character =
         characters[game.characterIndex];
 
-    $("characterDisplay").textContent =
-        character.emoji;
+    if (!character) {
+        return;
+    }
 
-    $("characterPreviewName").textContent =
-        character.name;
+    safeText(
+        "characterDisplay",
+        character.emoji
+    );
 
-    $("previewImmunity").textContent =
-        `${character.immunity}/5`;
+    safeText(
+        "characterPreviewName",
+        character.name
+    );
 
-    $("previewTechnical").textContent =
-        `${character.technical}/5`;
+    safeText(
+        "previewTechnical",
+        `${character.technical}/5`
+    );
 
-    $("previewEndurance").textContent =
-        `${character.endurance}/5`;
+    safeText(
+        "previewEndurance",
+        `${character.endurance}/5`
+    );
 
-    $("immunityStars").textContent =
-        stars(character.immunity);
+    safeText(
+        "technicalStars",
+        stars(character.technical)
+    );
 
-    $("technicalStars").textContent =
-        stars(character.technical);
+    safeText(
+        "enduranceStars",
+        stars(character.endurance)
+    );
 
-    $("enduranceStars").textContent =
-        stars(character.endurance);
 }
 
 
@@ -481,6 +676,7 @@ function stars(value) {
         "⭐".repeat(value) +
         "☆".repeat(5 - value)
     );
+
 }
 
 
@@ -496,16 +692,32 @@ document
             "click",
             () => {
 
-                game.mode =
+                const selectedMode =
                     button.dataset.mode;
+
+                if (
+                    selectedMode !== "basic" &&
+                    selectedMode !== "advanced"
+                ) {
+                    return;
+                }
+
+                game.mode =
+                    selectedMode;
 
                 document
                     .querySelectorAll(".mode-card")
-                    .forEach(b =>
-                        b.classList.remove("selected")
-                    );
+                    .forEach(b => {
 
-                button.classList.add("selected");
+                        b.classList.remove(
+                            "selected"
+                        );
+
+                    });
+
+                button.classList.add(
+                    "selected"
+                );
 
             }
         );
@@ -517,29 +729,32 @@ document
    CREATE ASTRONAUT
 ========================================================= */
 
-$("createAstronautButton")
-    .addEventListener(
+const createAstronautButton =
+    $("createAstronautButton");
+
+if (createAstronautButton) {
+
+    createAstronautButton.addEventListener(
         "click",
         createAstronaut
     );
 
+}
+
 
 function createAstronaut() {
 
-    const id =
-        $("traineeId").value.trim();
+    const nameInput =
+        $("traineeName");
 
     const name =
-        $("traineeName").value.trim();
+        nameInput
+            ? nameInput.value.trim()
+            : "";
 
-    if (!id) {
-
-        alert(
-            "Please create your Trainee ID first! 🪪"
-        );
-
-        return;
-    }
+    /*
+       No trainee ID is required.
+    */
 
     if (!name) {
 
@@ -548,16 +763,20 @@ function createAstronaut() {
         );
 
         return;
+
     }
 
-    game.traineeId = id;
-    game.name = name;
+    game.name =
+        name;
 
-    game.energy = 100;
-    game.immunity = 100;
-    game.experience = 0;
+    game.energy =
+        100;
 
-    game.unlockedLevel = 1;
+    game.experience =
+        0;
+
+    game.unlockedLevel =
+        1;
 
     game.completedTasks = {
         1: [],
@@ -565,9 +784,37 @@ function createAstronaut() {
         3: []
     };
 
+    game.currentLevel =
+        1;
+
+    game.currentTask =
+        0;
+
+    game.currentSubtask =
+        0;
+
+    game.timer =
+        60;
+
+    game.taskCompleted =
+        false;
+
+    clearInterval(
+        game.timerInterval
+    );
+
+    game.timerInterval =
+        null;
+
+    game.temporaryData =
+        {};
+
     updateProfile();
 
-    showScreen("levelScreen");
+    showScreen(
+        "levelScreen"
+    );
+
 }
 
 
@@ -580,56 +827,57 @@ function updateProfile() {
     const character =
         characters[game.characterIndex];
 
-    $("profileAvatar").textContent =
-        character.emoji;
+    if (!character) {
+        return;
+    }
 
-    $("profileName").textContent =
-        game.name;
+    safeText(
+        "profileAvatar",
+        character.emoji
+    );
 
-    $("profileId").textContent =
-        game.traineeId;
+    safeText(
+        "profileName",
+        game.name
+    );
 
-    $("profileMode").textContent =
-        game.mode.toUpperCase();
+    safeText(
+        "profileMode",
+        game.mode.toUpperCase()
+    );
 
     updateLevelStats();
 
     updateLevelLocks();
+
 }
 
 
 function updateLevelStats() {
 
-    setBar(
+    safeBar(
         "levelEnergyBar",
         game.energy
     );
 
-    setBar(
-        "levelImmunityBar",
-        game.immunity
-    );
-
-    setBar(
+    safeBar(
         "levelExperienceBar",
-        Math.min(game.experience, 100)
+        Math.min(
+            game.experience,
+            100
+        )
     );
 
-    $("levelEnergyText").textContent =
-        `${game.energy}/100`;
+    safeText(
+        "levelEnergyText",
+        `${game.energy}/100`
+    );
 
-    $("levelImmunityText").textContent =
-        `${game.immunity}/100`;
+    safeText(
+        "levelExperienceText",
+        `${game.experience} XP`
+    );
 
-    $("levelExperienceText").textContent =
-        `${game.experience} XP`;
-}
-
-
-function setBar(id, value) {
-
-    $(id).style.width =
-        `${Math.max(0, Math.min(100, value))}%`;
 }
 
 
@@ -648,26 +896,55 @@ function updateLevelLocks() {
         const card =
             $(`levelCard${level}`);
 
+        if (!card) {
+            continue;
+        }
+
         const label =
-            card.querySelector(".unlock-label");
+            card.querySelector(
+                ".unlock-label"
+            );
 
-        if (level <= game.unlockedLevel) {
+        if (
+            level <= game.unlockedLevel
+        ) {
 
-            card.classList.remove("locked");
-            card.classList.add("unlocked");
+            card.classList.remove(
+                "locked"
+            );
 
-            label.textContent =
-                "🔓 UNLOCKED";
+            card.classList.add(
+                "unlocked"
+            );
+
+            if (label) {
+
+                label.textContent =
+                    "🔓 UNLOCKED";
+
+            }
 
         } else {
 
-            card.classList.remove("unlocked");
-            card.classList.add("locked");
+            card.classList.remove(
+                "unlocked"
+            );
 
-            label.textContent =
-                "🔒 LOCKED";
+            card.classList.add(
+                "locked"
+            );
+
+            if (label) {
+
+                label.textContent =
+                    "🔒 LOCKED";
+
+            }
+
         }
+
     }
+
 }
 
 
@@ -683,10 +960,15 @@ document
                     Number(card.dataset.level);
 
                 if (
+                    !levels[level]
+                ) {
+                    return;
+                }
+
+                if (
                     level >
                     game.unlockedLevel
                 ) {
-
                     return;
                 }
 
@@ -704,20 +986,50 @@ document
 
 function openLevel(level) {
 
+    if (!levels[level]) {
+        return;
+    }
+
     game.currentLevel =
         level;
 
-    $("introIcon").textContent =
-        levels[level].icon;
+    game.currentTask =
+        0;
 
-    $("introLevel").textContent =
-        `LEVEL ${level}`;
+    game.currentSubtask =
+        0;
 
-    $("introTitle").textContent =
-        levels[level].title;
+    game.taskCompleted =
+        false;
 
-    $("introDescription").textContent =
-        levels[level].description;
+    clearInterval(
+        game.timerInterval
+    );
+
+    game.timerInterval =
+        null;
+
+    clearSubtaskEffects();
+
+    safeText(
+        "introIcon",
+        levels[level].icon
+    );
+
+    safeText(
+        "introLevel",
+        `LEVEL ${level}`
+    );
+
+    safeText(
+        "introTitle",
+        levels[level].title
+    );
+
+    safeText(
+        "introDescription",
+        levels[level].description
+    );
 
     const messages = {
 
@@ -732,35 +1044,53 @@ function openLevel(level) {
 
     };
 
-    $("robotIntroText").textContent =
-        messages[level];
+    safeText(
+        "robotIntroText",
+        messages[level]
+    );
 
-    showScreen("levelIntroScreen");
+    showScreen(
+        "levelIntroScreen"
+    );
+
 }
 
 
-$("beginLevelButton")
-    .addEventListener(
+const beginLevelButton =
+    $("beginLevelButton");
+
+if (beginLevelButton) {
+
+    beginLevelButton.addEventListener(
         "click",
         () => {
 
             /*
-                Every new level restores energy.
-                Experience remains permanent.
+               Each level starts with full energy.
+               There is no immunity system.
             */
 
-            game.energy = 100;
+            game.energy =
+                100;
 
-            game.immunity = 100;
+            game.currentTask =
+                0;
+
+            game.currentSubtask =
+                0;
 
             updateProfile();
 
             renderTaskScreen();
 
-            showScreen("taskScreen");
+            showScreen(
+                "taskScreen"
+            );
 
         }
     );
+
+}
 
 
 /* =========================================================
@@ -772,25 +1102,45 @@ function renderTaskScreen() {
     const level =
         levels[game.currentLevel];
 
-    $("taskLevelBadge").textContent =
-        `LEVEL ${game.currentLevel}`;
+    if (!level) {
+        return;
+    }
 
-    $("taskLevelTitle").textContent =
-        level.title;
+    safeText(
+        "taskLevelBadge",
+        `LEVEL ${game.currentLevel}`
+    );
 
-    $("hudAvatar").textContent =
-        characters[game.characterIndex].emoji;
+    safeText(
+        "taskLevelTitle",
+        level.title
+    );
 
-    $("hudName").textContent =
-        game.name;
+    const character =
+        characters[game.characterIndex];
 
-    $("hudId").textContent =
-        game.traineeId;
+    if (character) {
+
+        safeText(
+            "hudAvatar",
+            character.emoji
+        );
+
+    }
+
+    safeText(
+        "hudName",
+        game.name
+    );
 
     updateGameplayHUD();
 
     const grid =
         $("taskGrid");
+
+    if (!grid) {
+        return;
+    }
 
     grid.innerHTML = "";
 
@@ -869,30 +1219,50 @@ function renderTaskScreen() {
 
                 card.addEventListener(
                     "click",
-                    () =>
-                        startTask(index)
+                    () => {
+
+                        startTask(index);
+
+                    }
                 );
 
             }
 
-            grid.appendChild(card);
+            grid.appendChild(
+                card
+            );
 
         }
     );
+
 }
 
 
-$("taskBackButton")
-    .addEventListener(
+const taskBackButton =
+    $("taskBackButton");
+
+if (taskBackButton) {
+
+    taskBackButton.addEventListener(
         "click",
         () => {
 
+            clearInterval(
+                game.timerInterval
+            );
+
+            clearSubtaskEffects();
+
             updateProfile();
 
-            showScreen("levelScreen");
+            showScreen(
+                "levelScreen"
+            );
 
         }
     );
+
+}
 
 
 /* =========================================================
@@ -900,6 +1270,22 @@ $("taskBackButton")
 ========================================================= */
 
 function startTask(taskIndex) {
+
+    const level =
+        levels[game.currentLevel];
+
+    if (
+        !level ||
+        !level.tasks[taskIndex]
+    ) {
+        return;
+    }
+
+    clearInterval(
+        game.timerInterval
+    );
+
+    clearSubtaskEffects();
 
     game.currentTask =
         taskIndex;
@@ -919,33 +1305,129 @@ function startTask(taskIndex) {
     game.temporaryData =
         {};
 
-    clearInterval(
-        game.timerInterval
+    const task =
+        level.tasks[taskIndex];
+
+    safeText(
+        "gameplayLevel",
+        `LEVEL ${game.currentLevel}`
     );
 
-    const task =
-        levels[
-            game.currentLevel
-        ].tasks[taskIndex];
+    safeText(
+        "gameplayTaskTitle",
+        task.title
+    );
 
-    $("gameplayLevel").textContent =
-        `LEVEL ${game.currentLevel}`;
+    const character =
+        characters[game.characterIndex];
 
-    $("gameplayTaskTitle").textContent =
-        task.title;
+    if (character) {
 
-    $("astronautPlayer").textContent =
-        characters[
-            game.characterIndex
-        ].emoji;
+        safeText(
+            "astronautPlayer",
+            character.emoji
+        );
+
+    }
 
     updateGameplayHUD();
 
-    showScreen("gameplayScreen");
+    showScreen(
+        "gameplayScreen"
+    );
 
     renderSubtask();
 
-    startTimer();
+    updateTimerVisibility();
+
+    /*
+       Basic mode:
+       No timer.
+
+       Advanced mode:
+       60-second timer.
+    */
+
+    if (
+        game.mode === "advanced"
+    ) {
+
+        startTimer();
+
+    }
+
+}
+
+
+/* =========================================================
+   TIMER VISIBILITY
+========================================================= */
+
+function updateTimerVisibility() {
+
+    const timerText =
+        $("timerText");
+
+    const timerContainer =
+        $("timerContainer");
+
+    const gameTimer =
+        $("gameTimer");
+
+    const taskTimer =
+        $("taskTimer");
+
+    const elements = [
+        timerText,
+        timerContainer,
+        gameTimer,
+        taskTimer
+    ];
+
+    elements.forEach(element => {
+
+        if (!element) {
+            return;
+        }
+
+        const parent =
+            element.closest(
+                ".timer-container, .timer-box, .game-timer, .task-timer"
+            );
+
+        if (
+            game.mode === "basic"
+        ) {
+
+            if (parent) {
+
+                parent.style.display =
+                    "none";
+
+            } else {
+
+                element.style.display =
+                    "none";
+
+            }
+
+        } else {
+
+            if (parent) {
+
+                parent.style.display =
+                    "";
+
+            } else {
+
+                element.style.display =
+                    "";
+
+            }
+
+        }
+
+    });
 
 }
 
@@ -960,62 +1442,67 @@ function startTimer() {
         game.timerInterval
     );
 
+    if (
+        game.mode !== "advanced"
+    ) {
+
+        return;
+
+    }
+
     game.timer =
         60;
 
-    $("timerText").textContent =
-        game.timer;
+    safeText(
+        "timerText",
+        game.timer
+    );
 
     game.timerInterval =
         setInterval(() => {
 
-            game.timer--;
-
-            $("timerText").textContent =
-                game.timer;
-
-            /*
-                Random gameplay effects.
-            */
-
-            randomImmunityEvent();
-
-            if (game.timer <= 0) {
+            if (
+                game.mode !== "advanced" ||
+                game.taskCompleted
+            ) {
 
                 clearInterval(
                     game.timerInterval
                 );
 
+                game.timerInterval =
+                    null;
+
+                return;
+
+            }
+
+            game.timer--;
+
+            safeText(
+                "timerText",
+                game.timer
+            );
+
+            if (
+                game.timer <= 0
+            ) {
+
+                clearInterval(
+                    game.timerInterval
+                );
+
+                game.timerInterval =
+                    null;
+
                 failCurrentTask(
-                    "Time is up! Every astronaut learns by trying again."
+                    "Time is up! Restart the task and try again."
                 );
 
             }
 
         }, 1000);
-}
 
-
-function randomImmunityEvent() {
-
-    /*
-        Basic:
-        Immunity cannot reach zero.
-
-        Advanced:
-        Immunity can reach zero.
-    */
-
-    if (
-        Math.random() < 0.07
-    ) {
-
-        changeImmunity(
-            -3,
-            "A small unexpected space hazard affected your immunity."
-        );
-
-    }
 }
 
 
@@ -1025,43 +1512,36 @@ function randomImmunityEvent() {
 
 function updateGameplayHUD() {
 
-    $("energyText").textContent =
-        game.energy;
+    safeText(
+        "energyText",
+        game.energy
+    );
 
-    $("immunityText").textContent =
-        game.immunity;
+    safeText(
+        "experienceText",
+        game.experience
+    );
 
-    $("experienceText").textContent =
-        game.experience;
+    safeText(
+        "gameEnergyText",
+        game.energy
+    );
 
-    $("gameEnergyText").textContent =
-        game.energy;
+    safeText(
+        "gameExperienceText",
+        `${game.experience} XP`
+    );
 
-    $("gameImmunityText").textContent =
-        game.immunity;
-
-    $("gameExperienceText").textContent =
-        `${game.experience} XP`;
-
-    setBar(
+    safeBar(
         "energyBar",
         game.energy
     );
 
-    setBar(
-        "immunityBar",
-        game.immunity
-    );
-
-    setBar(
+    safeBar(
         "gameEnergyBar",
         game.energy
     );
 
-    setBar(
-        "gameImmunityBar",
-        game.immunity
-    );
 }
 
 
@@ -1069,7 +1549,22 @@ function updateGameplayHUD() {
    ENERGY
 ========================================================= */
 
-function changeEnergy(amount) {
+function changeEnergy(
+    amount,
+    allowFailure = true
+) {
+
+    if (
+        game.taskCompleted &&
+        allowFailure
+    ) {
+
+        return false;
+
+    }
+
+    const oldEnergy =
+        game.energy;
 
     game.energy =
         Math.max(
@@ -1080,57 +1575,36 @@ function changeEnergy(amount) {
             )
         );
 
-    game.taskEnergySpent +=
-        Math.abs(amount);
+    if (
+        amount < 0
+    ) {
+
+        game.taskEnergySpent +=
+            Math.min(
+                Math.abs(amount),
+                oldEnergy
+            );
+
+    }
 
     updateGameplayHUD();
 
-    if (game.energy <= 0) {
+    if (
+        allowFailure &&
+        game.energy <= 0 &&
+        !game.taskCompleted
+    ) {
 
         failCurrentTask(
             "You ran out of energy. Rest up and try again!"
         );
 
-    }
-}
-
-
-/* =========================================================
-   IMMUNITY
-========================================================= */
-
-function changeImmunity(
-    amount,
-    reason = ""
-) {
-
-    let minimum =
-        game.mode === "basic"
-            ? 15
-            : 0;
-
-    game.immunity =
-        Math.max(
-            minimum,
-            Math.min(
-                100,
-                game.immunity + amount
-            )
-        );
-
-    updateGameplayHUD();
-
-    if (
-        game.mode === "advanced" &&
-        game.immunity <= 0
-    ) {
-
-        failCurrentTask(
-            reason ||
-            "Your immunity reached zero."
-        );
+        return false;
 
     }
+
+    return true;
+
 }
 
 
@@ -1154,8 +1628,11 @@ function gainExperience(amount) {
 
 function robotMessage(text) {
 
-    $("robotInstruction").textContent =
-        text;
+    safeText(
+        "robotInstruction",
+        text
+    );
+
 }
 
 
@@ -1165,36 +1642,76 @@ function robotMessage(text) {
 
 function renderSubtask() {
 
+    if (
+        game.taskCompleted
+    ) {
+        return;
+    }
+
     const level =
         game.currentLevel;
 
+    const levelData =
+        levels[level];
+
+    if (!levelData) {
+        return;
+    }
+
     const task =
-        levels[level].tasks[
+        levelData.tasks[
             game.currentTask
         ];
+
+    if (!task) {
+        return;
+    }
 
     const subtask =
         game.currentSubtask;
 
-    $("miniGame").innerHTML = "";
+    if (
+        subtask < 0 ||
+        subtask >= task.subtasks.length
+    ) {
+        return;
+    }
+
+    const miniGame =
+        $("miniGame");
+
+    if (!miniGame) {
+        return;
+    }
+
+    clearSubtaskEffects();
+
+    game.temporaryData =
+        {};
+
+    miniGame.innerHTML = "";
 
     const world =
         $("gameWorld");
 
-    world.dataset.level =
-        level;
+    if (world) {
 
-    world.dataset.task =
-        game.currentTask;
+        world.dataset.level =
+            level;
 
-    world.dataset.subtask =
-        subtask;
+        world.dataset.task =
+            game.currentTask;
 
-    createWorldDecoration(
-        level,
-        game.currentTask,
-        subtask
-    );
+        world.dataset.subtask =
+            subtask;
+
+        createWorldDecoration(
+            level,
+            game.currentTask,
+            subtask
+        );
+
+    }
 
     robotMessage(
         getInstruction(
@@ -1222,7 +1739,7 @@ function renderSubtask() {
 
     `;
 
-    $("miniGame").appendChild(
+    miniGame.appendChild(
         header
     );
 
@@ -1231,6 +1748,7 @@ function renderSubtask() {
         game.currentTask,
         subtask
     );
+
 }
 
 
@@ -1335,6 +1853,7 @@ function getInstruction(
         ] ||
         "Complete the challenge carefully, Cadet!"
     );
+
 }
 
 
@@ -1350,6 +1869,10 @@ function createWorldDecoration(
 
     const object =
         $("worldObject");
+
+    if (!object) {
+        return;
+    }
 
     object.innerHTML = "";
 
@@ -1393,9 +1916,24 @@ function createWorldDecoration(
     const key =
         `${level}-${task}`;
 
-    object.textContent =
-        decorations[key][subtask] ||
-        "✨";
+    const decoration =
+        decorations[key];
+
+    if (
+        decoration &&
+        decoration[subtask]
+    ) {
+
+        object.textContent =
+            decoration[subtask];
+
+    } else {
+
+        object.textContent =
+            "✨";
+
+    }
+
 }
 
 
@@ -1412,83 +1950,95 @@ function createMiniGame(
     if (level === 1 && task === 0) {
 
         createOxygenGame(subtask);
-
         return;
+
     }
 
     if (level === 1 && task === 1) {
 
         createRadiationShieldGame(subtask);
-
         return;
+
     }
 
     if (level === 1 && task === 2) {
 
         createPowerGame(subtask);
-
         return;
+
     }
 
     if (level === 2 && task === 0) {
 
         createLifeSupportGame(subtask);
-
         return;
+
     }
 
     if (level === 2 && task === 1) {
 
         createFoodGrowingGame(subtask);
-
         return;
+
     }
 
     if (level === 2 && task === 2) {
 
         createSavePowerGame(subtask);
-
         return;
+
     }
 
     if (level === 3 && task === 0) {
 
         createRadiationStormGame(subtask);
-
         return;
+
     }
 
     if (level === 3 && task === 1) {
 
         createFoodSupplyGame(subtask);
-
         return;
+
     }
 
     if (level === 3 && task === 2) {
 
         createLaunchGame(subtask);
-
         return;
+
     }
+
 }
 
 
 /* =========================================================
-   GENERIC SUBTASK BUTTON
+   GENERIC SUBTASK COMPLETION
 ========================================================= */
 
 function completeSubtask() {
 
+    if (
+        game.taskCompleted
+    ) {
+        return;
+    }
+
     clearSubtaskEffects();
 
-    changeEnergy(
-        -7
-    );
+    const energyOK =
+        changeEnergy(
+            -7,
+            true
+        );
 
-    changeImmunity(
-        -2
-    );
+    if (
+        !energyOK ||
+        game.taskCompleted
+    ) {
+        return;
+    }
 
     game.currentSubtask++;
 
@@ -1499,9 +2049,11 @@ function completeSubtask() {
         completeCurrentTask();
 
         return;
+
     }
 
     renderSubtask();
+
 }
 
 
@@ -1522,51 +2074,74 @@ function createOxygenGame(subtask) {
         const colors =
             ["🔴", "🔵", "🟢", "🟡"];
 
-        colors.forEach(
-            (color, index) => {
+        colors.forEach(color => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.className =
-                    "wire";
+            button.className =
+                "wire";
 
-                button.textContent =
-                    color;
+            button.textContent =
+                color;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        button.classList.toggle(
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        button.classList.contains(
                             "connected"
-                        );
+                        )
+                    ) {
+                        return;
+                    }
 
+                    button.classList.add(
+                        "connected"
+                    );
+
+                    const energyOK =
                         changeEnergy(-1);
 
-                        const connected =
-                            document.querySelectorAll(
-                                ".wire.connected"
-                            ).length;
+                    if (
+                        !energyOK ||
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                        if (connected === 4) {
+                    const connected =
+                        document.querySelectorAll(
+                            ".wire.connected"
+                        ).length;
 
-                            robotMessage(
-                                "Excellent! The oxygen circuit is working."
-                            );
+                    if (
+                        connected === 4
+                    ) {
 
-                            completeSubtask();
-                        }
+                        robotMessage(
+                            "Excellent! The oxygen circuit is working."
+                        );
+
+                        completeSubtask();
 
                     }
-                );
 
-                board.appendChild(
-                    button
-                );
+                }
+            );
 
-            }
-        );
+            board.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             board
@@ -1605,6 +2180,21 @@ function createOxygenGame(subtask) {
                 "click",
                 () => {
 
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        pipe.dataset.rotated === "true"
+                    ) {
+                        return;
+                    }
+
+                    pipe.dataset.rotated =
+                        "true";
+
                     pipe.style.transform =
                         `rotate(${
                             Math.floor(
@@ -1612,14 +2202,28 @@ function createOxygenGame(subtask) {
                             ) * 90
                         }deg)`;
 
-                    changeEnergy(-1);
+                    const energyOK =
+                        changeEnergy(-1);
 
                     if (
-                        [...document.querySelectorAll(".pipe")]
-                            .every(
-                                p =>
-                                    p.style.transform
+                        !energyOK ||
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
+                    const pipes =
+                        [
+                            ...grid.querySelectorAll(
+                                ".pipe"
                             )
+                        ];
+
+                    if (
+                        pipes.every(
+                            p =>
+                                p.dataset.rotated === "true"
+                        )
                     ) {
 
                         completeSubtask();
@@ -1687,12 +2291,18 @@ function createOxygenGame(subtask) {
         const slider =
             $("oxygenSlider");
 
+        if (!slider) {
+            return;
+        }
+
         slider.addEventListener(
             "input",
             () => {
 
-                $("oxygenValue").textContent =
-                    `${slider.value}%`;
+                safeText(
+                    "oxygenValue",
+                    `${slider.value}%`
+                );
 
             }
         );
@@ -1703,7 +2313,9 @@ function createOxygenGame(subtask) {
                 () => {
 
                     const value =
-                        Number(slider.value);
+                        Number(
+                            slider.value
+                        );
 
                     if (
                         value >= 35 &&
@@ -1728,6 +2340,7 @@ function createOxygenGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -1751,49 +2364,53 @@ function createRadiationShieldGame(subtask) {
             ["🧻", "Paper", false]
         ];
 
-        materials.forEach(
-            material => {
+        materials.forEach(material => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.className =
-                    "material";
+            button.className =
+                "material";
 
-                button.innerHTML =
-                    `${material[0]}<br>${material[1]}`;
+            button.innerHTML =
+                `${material[0]}<br>${material[1]}`;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        if (
-                            material[2]
-                        ) {
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                            button.classList.add(
-                                "correct"
-                            );
+                    if (
+                        material[2]
+                    ) {
 
-                            completeSubtask();
+                        button.classList.add(
+                            "correct"
+                        );
 
-                        } else {
+                        completeSubtask();
 
-                            wrongAttempt(
-                                "That material is too weak for radiation protection."
-                            );
+                    } else {
 
-                        }
+                        wrongAttempt(
+                            "That material is too weak for radiation protection."
+                        );
 
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                }
+            );
 
-            }
-        );
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -1841,14 +2458,22 @@ function createRadiationShieldGame(subtask) {
         const drop =
             $("shieldDrop");
 
+        if (!shield || !drop) {
+            return;
+        }
+
         shield.addEventListener(
             "dragstart",
             event => {
 
-                event.dataTransfer.setData(
-                    "text/plain",
-                    "shield"
-                );
+                if (event.dataTransfer) {
+
+                    event.dataTransfer.setData(
+                        "text/plain",
+                        "shield"
+                    );
+
+                }
 
             }
         );
@@ -1856,7 +2481,9 @@ function createRadiationShieldGame(subtask) {
         drop.addEventListener(
             "dragover",
             event => {
+
                 event.preventDefault();
+
             }
         );
 
@@ -1865,6 +2492,12 @@ function createRadiationShieldGame(subtask) {
             event => {
 
                 event.preventDefault();
+
+                if (
+                    game.taskCompleted
+                ) {
+                    return;
+                }
 
                 drop.textContent =
                     "🛡️ SHIELD PLACED";
@@ -1901,10 +2534,23 @@ function createRadiationShieldGame(subtask) {
             zone
         );
 
+        const dodgeButton =
+            $("dodgeButton");
+
+        if (!dodgeButton) {
+            return;
+        }
+
         let dodged = 0;
 
         const spawn =
             setInterval(() => {
+
+                if (
+                    game.taskCompleted
+                ) {
+                    return;
+                }
 
                 const asteroid =
                     document.createElement("div");
@@ -1925,41 +2571,53 @@ function createRadiationShieldGame(subtask) {
                     asteroid
                 );
 
-                setTimeout(
-                    () => asteroid.remove(),
-                    2000
-                );
+                setTimeout(() => {
+
+                    if (
+                        asteroid.parentNode
+                    ) {
+                        asteroid.remove();
+                    }
+
+                }, 2000);
 
             }, 800);
 
         game.temporaryData.interval =
             spawn;
 
-        $("dodgeButton")
-            .addEventListener(
-                "click",
-                () => {
+        dodgeButton.addEventListener(
+            "click",
+            () => {
 
-                    dodged++;
+                if (
+                    game.taskCompleted
+                ) {
+                    return;
+                }
 
-                    changeImmunity(-2);
+                dodged++;
 
-                    if (
-                        dodged >= 8
-                    ) {
+                if (
+                    dodged >= 8
+                ) {
 
-                        clearInterval(
-                            spawn
-                        );
+                    clearInterval(
+                        spawn
+                    );
 
-                        completeSubtask();
+                    game.temporaryData.interval =
+                        null;
 
-                    }
+                    completeSubtask();
 
                 }
-            );
+
+            }
+        );
 
     }
+
 }
 
 
@@ -1998,7 +2656,15 @@ function createPowerGame(subtask) {
                 "click",
                 () => {
 
-                    if (i === 5) {
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        i === 5
+                    ) {
 
                         button.classList.add(
                             "correct"
@@ -2070,14 +2736,22 @@ function createPowerGame(subtask) {
         const drop =
             $("panelDrop");
 
+        if (!panel || !drop) {
+            return;
+        }
+
         panel.addEventListener(
             "dragstart",
             event => {
 
-                event.dataTransfer.setData(
-                    "panel",
-                    "yes"
-                );
+                if (event.dataTransfer) {
+
+                    event.dataTransfer.setData(
+                        "text/plain",
+                        "panel"
+                    );
+
+                }
 
             }
         );
@@ -2085,7 +2759,9 @@ function createPowerGame(subtask) {
         drop.addEventListener(
             "dragover",
             event => {
+
                 event.preventDefault();
+
             }
         );
 
@@ -2094,6 +2770,12 @@ function createPowerGame(subtask) {
             event => {
 
                 event.preventDefault();
+
+                if (
+                    game.taskCompleted
+                ) {
+                    return;
+                }
 
                 drop.textContent =
                     "☀️ PANEL READY";
@@ -2140,37 +2822,42 @@ function createPowerGame(subtask) {
                 ".power-node"
             );
 
-        nodes.forEach(
-            node => {
+        nodes.forEach(node => {
 
-                node.addEventListener(
-                    "click",
-                    () => {
+            node.addEventListener(
+                "click",
+                () => {
 
-                        node.classList.add(
-                            "connected"
-                        );
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                        if (
-                            [...nodes].every(
-                                n =>
-                                    n.classList.contains(
-                                        "connected"
-                                    )
-                            )
-                        ) {
+                    node.classList.add(
+                        "connected"
+                    );
 
-                            completeSubtask();
+                    if (
+                        [...nodes].every(
+                            n =>
+                                n.classList.contains(
+                                    "connected"
+                                )
+                        )
+                    ) {
 
-                        }
+                        completeSubtask();
 
                     }
-                );
 
-            }
-        );
+                }
+            );
+
+        });
 
     }
+
 }
 
 
@@ -2219,7 +2906,15 @@ function createLifeSupportGame(subtask) {
                     "click",
                     () => {
 
-                        if (index === 2) {
+                        if (
+                            game.taskCompleted
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            index === 2
+                        ) {
 
                             button.classList.add(
                                 "correct"
@@ -2299,6 +2994,12 @@ function createLifeSupportGame(subtask) {
                     "click",
                     () => {
 
+                        if (
+                            game.taskCompleted
+                        ) {
+                            return;
+                        }
+
                         const current =
                             game.temporaryData.sequence.length;
 
@@ -2348,6 +3049,7 @@ function createLifeSupportGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -2384,15 +3086,22 @@ function createFoodGrowingGame(subtask) {
                 "click",
                 () => {
 
-                    button.textContent =
-                        "🌱";
+                    if (
+                        game.taskCompleted ||
+                        button.dataset.planted === "true"
+                    ) {
+                        return;
+                    }
+
+                    button.dataset.planted =
+                        "true";
 
                     button.style.borderColor =
                         "#72e6a5";
 
                     const planted =
-                        document.querySelectorAll(
-                            ".seed-slot[style*='border-color']"
+                        grid.querySelectorAll(
+                            ".seed-slot[data-planted='true']"
                         ).length;
 
                     if (
@@ -2445,6 +3154,12 @@ function createFoodGrowingGame(subtask) {
                     () => {
 
                         if (
+                            game.taskCompleted
+                        ) {
+                            return;
+                        }
+
+                        if (
                             amount === 2
                         ) {
 
@@ -2488,13 +3203,13 @@ function createFoodGrowingGame(subtask) {
             "range";
 
         slider.min =
-            0;
+            "0";
 
         slider.max =
-            100;
+            "100";
 
         slider.value =
-            50;
+            "50";
 
         slider.style.width =
             "80%";
@@ -2554,6 +3269,7 @@ function createFoodGrowingGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -2564,13 +3280,16 @@ function createFoodGrowingGame(subtask) {
 function createSavePowerGame(subtask) {
 
     const systems = [
+
         "🌡️ Heater",
         "💡 Lights",
         "🛰️ Scanner",
         "🌱 Greenhouse",
         "📡 Radio",
         "🫁 Life Support"
+
     ];
+
 
     if (subtask === 0) {
 
@@ -2593,7 +3312,15 @@ function createSavePowerGame(subtask) {
                     "click",
                     () => {
 
-                        if (index === 2) {
+                        if (
+                            game.taskCompleted
+                        ) {
+                            return;
+                        }
+
+                        if (
+                            index === 2
+                        ) {
 
                             button.style.borderColor =
                                 "#72e6a5";
@@ -2634,32 +3361,36 @@ function createSavePowerGame(subtask) {
         grid.className =
             "power-system";
 
-        systems.forEach(
-            system => {
+        systems.forEach(system => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.textContent =
-                    system;
+            button.textContent =
+                system;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        button.classList.toggle(
-                            "off"
-                        );
-
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                    button.classList.toggle(
+                        "off"
+                    );
 
-            }
-        );
+                }
+            );
+
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -2671,8 +3402,8 @@ function createSavePowerGame(subtask) {
                 () => {
 
                     const off =
-                        document.querySelectorAll(
-                            ".power-system button.off"
+                        grid.querySelectorAll(
+                            "button.off"
                         ).length;
 
                     if (
@@ -2721,13 +3452,19 @@ function createSavePowerGame(subtask) {
                 "click",
                 () => {
 
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
                     button.classList.toggle(
                         "off"
                     );
 
                     const active =
-                        document.querySelectorAll(
-                            ".power-system button:not(.off)"
+                        systemsBox.querySelectorAll(
+                            "button:not(.off)"
                         ).length;
 
                     if (
@@ -2752,6 +3489,7 @@ function createSavePowerGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -2767,6 +3505,12 @@ function createRadiationStormGame(subtask) {
             createActionButton(
                 "📡 SCAN FOR STORM",
                 () => {
+
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
                     button.textContent =
                         "☢️ STORM DETECTED!";
@@ -2796,52 +3540,60 @@ function createRadiationStormGame(subtask) {
             "safe-zone-grid";
 
         const zones = [
+
             ["Zone A", false],
             ["Zone B", true],
             ["Zone C", false]
+
         ];
 
-        zones.forEach(
-            zone => {
+        zones.forEach(zone => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.className =
-                    "safe-zone";
+            button.className =
+                "safe-zone";
 
-                button.textContent =
-                    `🛡️ ${zone[0]}`;
+            button.textContent =
+                `🛡️ ${zone[0]}`;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        if (zone[1]) {
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                            button.classList.add(
-                                "safe"
-                            );
+                    if (
+                        zone[1]
+                    ) {
 
-                            completeSubtask();
+                        button.classList.add(
+                            "safe"
+                        );
 
-                        } else {
+                        completeSubtask();
 
-                            wrongAttempt(
-                                "The radiation level is too high here."
-                            );
+                    } else {
 
-                        }
+                        wrongAttempt(
+                            "The radiation level is too high here."
+                        );
 
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                }
+            );
 
-            }
-        );
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -2858,10 +3610,15 @@ function createRadiationStormGame(subtask) {
                 "🏃 RUN TO SHELTER",
                 () => {
 
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
+
                     let progress =
                         Number(
-                            button.dataset.progress ||
-                            0
+                            button.dataset.progress || 0
                         );
 
                     progress += 25;
@@ -2871,8 +3628,6 @@ function createRadiationStormGame(subtask) {
 
                     button.textContent =
                         `🏃 REACHING SHELTER ${progress}%`;
-
-                    changeImmunity(-3);
 
                     if (
                         progress >= 100
@@ -2890,6 +3645,7 @@ function createRadiationStormGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -2947,51 +3703,59 @@ function createFoodSupplyGame(subtask) {
             "food-options";
 
         const foods = [
+
             ["🍎", true],
             ["🥫", true],
             ["🍕", false],
             ["🍰", false]
+
         ];
 
-        foods.forEach(
-            food => {
+        foods.forEach(food => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.className =
-                    "food-item";
+            button.className =
+                "food-item";
 
-                button.textContent =
-                    food[0];
+            button.textContent =
+                food[0];
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        if (food[1]) {
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                            button.classList.toggle(
-                                "selected"
-                            );
+                    if (
+                        food[1]
+                    ) {
 
-                        } else {
+                        button.classList.toggle(
+                            "selected"
+                        );
 
-                            wrongAttempt(
-                                "That food is not suitable for the journey."
-                            );
+                    } else {
 
-                        }
+                        wrongAttempt(
+                            "That food is not suitable for the journey."
+                        );
 
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                }
+            );
 
-            }
-        );
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -3003,7 +3767,7 @@ function createFoodSupplyGame(subtask) {
                 () => {
 
                     const selected =
-                        document.querySelectorAll(
+                        grid.querySelectorAll(
                             ".food-item.selected"
                         ).length;
 
@@ -3038,13 +3802,13 @@ function createFoodSupplyGame(subtask) {
             "range";
 
         slider.min =
-            0;
+            "0";
 
         slider.max =
-            100;
+            "100";
 
         slider.value =
-            50;
+            "50";
 
         slider.style.width =
             "80%";
@@ -3106,6 +3870,7 @@ function createFoodSupplyGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -3118,10 +3883,12 @@ function createLaunchGame(subtask) {
     if (subtask === 0) {
 
         const systems = [
+
             "🛰️ Navigation",
             "⛽ Fuel",
             "🫁 Oxygen",
             "🔋 Battery"
+
         ];
 
         const grid =
@@ -3130,42 +3897,49 @@ function createLaunchGame(subtask) {
         grid.className =
             "power-system";
 
-        systems.forEach(
-            system => {
+        systems.forEach(system => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.textContent =
-                    system;
+            button.textContent =
+                system;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        button.classList.add(
-                            "off"
-                        );
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
+                    }
 
-                        if (
-                            document.querySelectorAll(
-                                ".power-system button.off"
-                            ).length === 4
-                        ) {
+                    button.classList.add(
+                        "off"
+                    );
 
-                            completeSubtask();
+                    const checked =
+                        grid.querySelectorAll(
+                            "button.off"
+                        ).length;
 
-                        }
+                    if (
+                        checked === 4
+                    ) {
+
+                        completeSubtask();
 
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                }
+            );
 
-            }
-        );
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -3184,43 +3958,49 @@ function createLaunchGame(subtask) {
             "food-options";
 
         const supplies = [
+
             "🫁 Oxygen",
             "🍎 Food",
             "🔋 Battery",
             "💎 Toy",
             "🛠️ Tools",
             "💧 Water"
+
         ];
 
-        supplies.forEach(
-            (supply, index) => {
+        supplies.forEach(supply => {
 
-                const button =
-                    document.createElement("button");
+            const button =
+                document.createElement("button");
 
-                button.className =
-                    "food-item";
+            button.className =
+                "food-item";
 
-                button.textContent =
-                    supply;
+            button.textContent =
+                supply;
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        button.classList.toggle(
-                            "selected"
-                        );
-
+                    if (
+                        game.taskCompleted
+                    ) {
+                        return;
                     }
-                );
 
-                grid.appendChild(
-                    button
-                );
+                    button.classList.toggle(
+                        "selected"
+                    );
 
-            }
-        );
+                }
+            );
+
+            grid.appendChild(
+                button
+            );
+
+        });
 
         $("miniGame").appendChild(
             grid
@@ -3232,7 +4012,7 @@ function createLaunchGame(subtask) {
                 () => {
 
                     const selected =
-                        document.querySelectorAll(
+                        grid.querySelectorAll(
                             ".food-item.selected"
                         ).length;
 
@@ -3272,7 +4052,14 @@ function createLaunchGame(subtask) {
         game.temporaryData.sequence =
             [];
 
-        ["🔑", "⛽", "🔋", "🚀"].forEach(
+        const icons = [
+            "🔑",
+            "⛽",
+            "🔋",
+            "🚀"
+        ];
+
+        icons.forEach(
             (icon, index) => {
 
                 const button =
@@ -3287,6 +4074,12 @@ function createLaunchGame(subtask) {
                 button.addEventListener(
                     "click",
                     () => {
+
+                        if (
+                            game.taskCompleted
+                        ) {
+                            return;
+                        }
 
                         const current =
                             game.temporaryData.sequence.length;
@@ -3317,15 +4110,18 @@ function createLaunchGame(subtask) {
                             game.temporaryData.sequence =
                                 [];
 
-                            document
+                            container
                                 .querySelectorAll(
                                     ".launch-step"
                                 )
                                 .forEach(
-                                    b =>
+                                    b => {
+
                                         b.classList.remove(
                                             "completed"
-                                        )
+                                        );
+
+                                    }
                                 );
 
                             wrongAttempt(
@@ -3349,6 +4145,7 @@ function createLaunchGame(subtask) {
         );
 
     }
+
 }
 
 
@@ -3379,6 +4176,7 @@ function createActionButton(
     );
 
     return button;
+
 }
 
 
@@ -3390,24 +4188,25 @@ function wrongAttempt(
     message
 ) {
 
+    if (
+        game.taskCompleted
+    ) {
+        return;
+    }
+
     robotMessage(
         message
     );
+
+    /*
+       changeEnergy already records the energy spent.
+       No second manual energy deduction here.
+    */
 
     changeEnergy(
         -5
     );
 
-    changeImmunity(
-        -5
-    );
-
-    /*
-        The player gains learning experience
-        from trying, but not completion XP.
-    */
-
-    game.taskEnergySpent += 5;
 }
 
 
@@ -3420,7 +4219,6 @@ function completeCurrentTask() {
     if (
         game.taskCompleted
     ) {
-
         return;
     }
 
@@ -3431,9 +4229,10 @@ function completeCurrentTask() {
         game.timerInterval
     );
 
-    /*
-        Completion rewards.
-    */
+    game.timerInterval =
+        null;
+
+    clearSubtaskEffects();
 
     const xpGain =
         25;
@@ -3442,23 +4241,37 @@ function completeCurrentTask() {
         xpGain
     );
 
+    /*
+       The final task cost should not trigger
+       a failure after the task is already completed.
+    */
+
     changeEnergy(
-        -5
+        -5,
+        false
     );
 
-    changeImmunity(
-        -3
-    );
+    const taskList =
+        game.completedTasks[
+            game.currentLevel
+        ];
 
-    game.completedTasks[
-        game.currentLevel
-    ].push(
-        game.currentTask
-    );
+    if (
+        !taskList.includes(
+            game.currentTask
+        )
+    ) {
+
+        taskList.push(
+            game.currentTask
+        );
+
+    }
 
     showCompletionMessage(
         xpGain
     );
+
 }
 
 
@@ -3477,42 +4290,64 @@ function showCompletionMessage(
             game.currentTask
         ];
 
-    $("modalIcon").textContent =
-        task.icon;
+    safeText(
+        "modalIcon",
+        task.icon
+    );
 
-    $("modalTitle").textContent =
-        "Great Job, Cadet! 🎉";
+    safeText(
+        "modalTitle",
+        "Great Job, Cadet! 🎉"
+    );
 
-    $("modalText").textContent =
+    safeText(
+        "modalText",
         getCompletionMessage(
             game.currentLevel,
             game.currentTask
+        )
+    );
+
+    const modalStats =
+        $("modalStats");
+
+    if (modalStats) {
+
+        modalStats.innerHTML = `
+
+            <div>
+                ⚡ Energy
+                <strong>
+                    -${game.taskEnergySpent}
+                </strong>
+            </div>
+
+            <div>
+                ⭐ Experience
+                <strong>
+                    +${xpGain} XP
+                </strong>
+            </div>
+
+        `;
+
+    }
+
+    safeText(
+        "modalButton",
+        "CONTINUE 🚀"
+    );
+
+    const modal =
+        $("messageModal");
+
+    if (modal) {
+
+        modal.classList.remove(
+            "hidden"
         );
 
-    $("modalStats").innerHTML = `
-
-        <div>
-            ⚡ Energy
-            <strong>
-                -${game.taskEnergySpent}
-            </strong>
-        </div>
-
-        <div>
-            ⭐ Experience
-            <strong>
-                +${xpGain} XP
-            </strong>
-        </div>
-
-    `;
-
-    $("modalButton").textContent =
-        "CONTINUE 🚀";
-
-    $("messageModal").classList.remove(
-        "hidden"
-    );
+    }
 
 }
 
@@ -3559,6 +4394,7 @@ function getCompletionMessage(
         ] ||
         "Mission task successfully completed!"
     );
+
 }
 
 
@@ -3566,21 +4402,31 @@ function getCompletionMessage(
    MODAL CONTINUE
 ========================================================= */
 
-$("modalButton")
-    .addEventListener(
+const modalButton =
+    $("modalButton");
+
+if (modalButton) {
+
+    modalButton.addEventListener(
         "click",
         continueAfterCompletion
     );
 
+}
+
 
 function continueAfterCompletion() {
 
-    $("messageModal")
-        .classList.add("hidden");
+    const modal =
+        $("messageModal");
 
-    /*
-        Level 3 final task
-    */
+    if (modal) {
+
+        modal.classList.add(
+            "hidden"
+        );
+
+    }
 
     if (
         game.currentLevel === 3 &&
@@ -3590,12 +4436,8 @@ function continueAfterCompletion() {
         missionComplete();
 
         return;
+
     }
-
-
-    /*
-        More tasks remain in this level.
-    */
 
     const taskCount =
         levels[
@@ -3609,15 +4451,13 @@ function continueAfterCompletion() {
 
         renderTaskScreen();
 
-        showScreen("taskScreen");
+        showScreen(
+            "taskScreen"
+        );
 
         return;
+
     }
-
-
-    /*
-        Entire level completed.
-    */
 
     finishLevel();
 
@@ -3629,10 +4469,6 @@ function continueAfterCompletion() {
 ========================================================= */
 
 function finishLevel() {
-
-    /*
-        Permanent experience reward
-    */
 
     const levelXP =
         50;
@@ -3648,14 +4484,7 @@ function finishLevel() {
         game.unlockedLevel =
             game.currentLevel + 1;
 
-        /*
-            New level starts with full energy.
-        */
-
         game.energy =
-            100;
-
-        game.immunity =
             100;
 
         updateProfile();
@@ -3667,6 +4496,7 @@ function finishLevel() {
         missionComplete();
 
     }
+
 }
 
 
@@ -3676,16 +4506,22 @@ function finishLevel() {
 
 function showLevelCompleteTransition() {
 
-    $("countdownNumber").textContent =
-        "🚀";
+    safeText(
+        "countdownNumber",
+        "🚀"
+    );
 
-    $("countdownCaption").textContent =
-        "Level complete!";
+    safeText(
+        "countdownCaption",
+        "Level complete!"
+    );
 
-    $("countdownMessage").textContent =
+    safeText(
+        "countdownMessage",
         game.currentLevel === 1
             ? "Launching toward the Moon..."
-            : "Preparing the final mission...";
+            : "Preparing the final mission..."
+    );
 
     showScreen(
         "countdownScreen"
@@ -3694,15 +4530,19 @@ function showLevelCompleteTransition() {
     const rocket =
         $("countdownRocket");
 
-    rocket.style.transform =
-        "translateY(0)";
-
-    setTimeout(() => {
+    if (rocket) {
 
         rocket.style.transform =
-            "translateY(-350px)";
+            "translateY(0)";
 
-    }, 500);
+        setTimeout(() => {
+
+            rocket.style.transform =
+                "translateY(-350px)";
+
+        }, 500);
+
+    }
 
     setTimeout(() => {
 
@@ -3711,6 +4551,7 @@ function showLevelCompleteTransition() {
         );
 
     }, 2200);
+
 }
 
 
@@ -3725,7 +4566,6 @@ function failCurrentTask(
     if (
         game.taskCompleted
     ) {
-
         return;
     }
 
@@ -3736,146 +4576,98 @@ function failCurrentTask(
         game.timerInterval
     );
 
-    /*
-        Advanced can hit zero.
-        Basic keeps a minimum immunity.
-    */
+    game.timerInterval =
+        null;
 
-    if (
-        game.mode === "advanced"
-    ) {
-
-        game.immunity =
-            0;
-
-    } else {
-
-        game.immunity =
-            15;
-
-    }
-
-    changeEnergy(
-        -10
-    );
+    clearSubtaskEffects();
 
     updateGameplayHUD();
 
-    $("failureText").textContent =
+    safeText(
+        "failureText",
         reason ||
-        "Your immunity became too low. Restart the task and try again!";
+        "Your energy became too low. Restart the task and try again!"
+    );
 
-    $("failureEnergy").textContent =
-        game.energy;
+    safeText(
+        "failureEnergy",
+        game.energy
+    );
 
-    $("failureXP").textContent =
-        game.experience;
+    safeText(
+        "failureXP",
+        game.experience
+    );
 
-    $("failureModal")
-        .classList.remove(
+    const failureModal =
+        $("failureModal");
+
+    if (failureModal) {
+
+        failureModal.classList.remove(
             "hidden"
         );
+
+    }
 
 }
 
 
-$("failureRestartButton")
-    .addEventListener(
+/* =========================================================
+   FAILURE RESTART
+========================================================= */
+
+const failureRestartButton =
+    $("failureRestartButton");
+
+if (failureRestartButton) {
+
+    failureRestartButton.addEventListener(
         "click",
         () => {
 
-            $("failureModal")
-                .classList.add(
+            const modal =
+                $("failureModal");
+
+            if (modal) {
+
+                modal.classList.add(
                     "hidden"
                 );
+
+            }
 
             restartCurrentTask();
 
         }
     );
 
-
-$("failureExitButton")
-    .addEventListener(
-        "click",
-        () => {
-
-            $("failureModal")
-                .classList.add(
-                    "hidden"
-                );
-
-            renderTaskScreen();
-
-            showScreen(
-                "taskScreen"
-            );
-
-        }
-    );
-
-
-/* =========================================================
-   RESTART TASK
-========================================================= */
-
-$("restartTaskButton")
-    .addEventListener(
-        "click",
-        restartCurrentTask
-    );
-
-
-function restartCurrentTask() {
-
-    clearSubtaskEffects();
-
-    game.currentSubtask =
-        0;
-
-    game.timer =
-        60;
-
-    game.taskCompleted =
-        false;
-
-    game.temporaryData =
-        {};
-
-    /*
-        Recovering immunity costs energy.
-    */
-
-    if (
-        game.immunity < 100
-    ) {
-
-        changeEnergy(
-            -8
-        );
-
-        game.immunity =
-            Math.min(
-                100,
-                game.immunity + 30
-            );
-
-    }
-
-    startTask(
-        game.currentTask
-    );
 }
 
 
 /* =========================================================
-   EXIT TASK
+   FAILURE EXIT
 ========================================================= */
 
-$("quitTaskButton")
-    .addEventListener(
+const failureExitButton =
+    $("failureExitButton");
+
+if (failureExitButton) {
+
+    failureExitButton.addEventListener(
         "click",
         () => {
+
+            const modal =
+                $("failureModal");
+
+            if (modal) {
+
+                modal.classList.add(
+                    "hidden"
+                );
+
+            }
 
             clearInterval(
                 game.timerInterval
@@ -3892,6 +4684,130 @@ $("quitTaskButton")
         }
     );
 
+}
+
+
+/* =========================================================
+   RESTART TASK
+========================================================= */
+
+const restartTaskButton =
+    $("restartTaskButton");
+
+if (restartTaskButton) {
+
+    restartTaskButton.addEventListener(
+        "click",
+        restartCurrentTask
+    );
+
+}
+
+
+function restartCurrentTask() {
+
+    clearInterval(
+        game.timerInterval
+    );
+
+    game.timerInterval =
+        null;
+
+    clearSubtaskEffects();
+
+    /*
+       Restarting costs 8 energy.
+    */
+
+    if (
+        game.energy > 0
+    ) {
+
+        game.energy =
+            Math.max(
+                0,
+                game.energy - 8
+            );
+
+    }
+
+    game.currentSubtask =
+        0;
+
+    game.timer =
+        60;
+
+    game.taskCompleted =
+        false;
+
+    game.taskEnergySpent =
+        0;
+
+    game.temporaryData =
+        {};
+
+    updateGameplayHUD();
+
+    /*
+       If energy became zero while restarting,
+       do not immediately create another task.
+    */
+
+    if (
+        game.energy <= 0
+    ) {
+
+        failCurrentTask(
+            "You do not have enough energy to restart this task."
+        );
+
+        return;
+
+    }
+
+    startTask(
+        game.currentTask
+    );
+
+}
+
+
+/* =========================================================
+   EXIT TASK
+========================================================= */
+
+const quitTaskButton =
+    $("quitTaskButton");
+
+if (quitTaskButton) {
+
+    quitTaskButton.addEventListener(
+        "click",
+        () => {
+
+            clearInterval(
+                game.timerInterval
+            );
+
+            game.timerInterval =
+                null;
+
+            clearSubtaskEffects();
+
+            game.taskCompleted =
+                false;
+
+            renderTaskScreen();
+
+            showScreen(
+                "taskScreen"
+            );
+
+        }
+    );
+
+}
+
 
 /* =========================================================
    CLEANUP
@@ -3900,6 +4816,7 @@ $("quitTaskButton")
 function clearSubtaskEffects() {
 
     if (
+        game.temporaryData &&
         game.temporaryData.interval
     ) {
 
@@ -3909,6 +4826,7 @@ function clearSubtaskEffects() {
 
         game.temporaryData.interval =
             null;
+
     }
 
 }
@@ -3924,13 +4842,20 @@ function missionComplete() {
         game.timerInterval
     );
 
+    game.timerInterval =
+        null;
+
     clearSubtaskEffects();
 
-    $("finalXP").textContent =
-        `${game.experience} XP`;
+    safeText(
+        "finalXP",
+        `${game.experience} XP`
+    );
 
-    $("finalName").textContent =
-        game.name;
+    safeText(
+        "finalName",
+        game.name
+    );
 
     showScreen(
         "missionCompleteScreen"
@@ -3943,18 +4868,32 @@ function missionComplete() {
    PLAY AGAIN
 ========================================================= */
 
-$("playAgainButton")
-    .addEventListener(
+const playAgainButton =
+    $("playAgainButton");
+
+if (playAgainButton) {
+
+    playAgainButton.addEventListener(
         "click",
         () => {
 
-            game.energy = 100;
+            clearInterval(
+                game.timerInterval
+            );
 
-            game.immunity = 100;
+            game.timerInterval =
+                null;
 
-            game.experience = 0;
+            clearSubtaskEffects();
 
-            game.unlockedLevel = 1;
+            game.energy =
+                100;
+
+            game.experience =
+                0;
+
+            game.unlockedLevel =
+                1;
 
             game.completedTasks = {
                 1: [],
@@ -3962,30 +4901,48 @@ $("playAgainButton")
                 3: []
             };
 
-            game.currentLevel = 1;
+            game.currentLevel =
+                1;
 
-            game.currentTask = 0;
+            game.currentTask =
+                0;
 
-            game.currentSubtask = 0;
+            game.currentSubtask =
+                0;
 
-            clearInterval(
-                game.timerInterval
-            );
+            game.timer =
+                60;
+
+            game.taskEnergySpent =
+                0;
+
+            game.taskCompleted =
+                false;
+
+            game.temporaryData =
+                {};
+
+            updateProfile();
 
             showScreen(
                 "levelScreen"
             );
 
-            updateProfile();
-
         }
     );
+
+}
 
 
 /* =========================================================
    INITIALIZATION
 ========================================================= */
 
+hideUnusedUI();
+
 updateCharacterPreview();
 
 createShootingStar();
+
+
+});
