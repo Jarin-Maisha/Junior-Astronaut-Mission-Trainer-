@@ -1,215 +1,106 @@
 /* =========================================================
    JUNIOR ASTRONAUT MISSION TRAINER
-   Main Game Logic
+   Main Game Controller
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+"use strict";
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const $ = (id) => document.getElementById(id);
+
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(screen => {
+        screen.classList.add("hidden");
+        screen.classList.remove("active");
+    });
+
+    const screen = $(id);
+
+    if (screen) {
+        screen.classList.remove("hidden");
+        screen.classList.add("active");
+    }
+}
+
+function setText(id, text) {
+    const element = $(id);
+
+    if (element) {
+        element.textContent = text;
+    }
+}
+
+function onClick(id, handler) {
+    const element = $(id);
+
+    if (element) {
+        element.addEventListener("click", handler);
+    }
+}
 
 
 /* =========================================================
    CHARACTER DATA
 ========================================================= */
 
-const characters = [
+const characters = {
 
-    {
-        name: "Luna Bunny",
-        emoji: "🐰",
-        technical: 3,
-        endurance: 5,
-        suit: "Pink Suit"
-    },
-
-    {
-        name: "Nova Cat",
-        emoji: "🐱",
-        technical: 5,
-        endurance: 3,
-        suit: "Purple Suit"
-    },
-
-    {
-        name: "Orbit Panda",
+    panda: {
+        name: "Panda",
         emoji: "🐼",
+        suit: "White",
+        immunity: 5,
+        technical: 4,
+        endurance: 4
+    },
+
+    bunny: {
+        name: "Bunny",
+        emoji: "🐰",
+        suit: "Pink",
+        immunity: 4,
         technical: 3,
-        endurance: 4,
-        suit: "Lavender Suit"
+        endurance: 5
     },
 
-    {
-        name: "Comet Fox",
+    fox: {
+        name: "Fox",
         emoji: "🦊",
-        technical: 4,
-        endurance: 5,
-        suit: "Light Blue Suit"
-    },
-
-    {
-        name: "Cosmo Bear",
-        emoji: "🐻",
-        technical: 4,
-        endurance: 3,
-        suit: "Grey Suit"
-    },
-
-    {
-        name: "Astro Pup",
-        emoji: "🐶",
+        suit: "Purple",
+        immunity: 4,
         technical: 5,
-        endurance: 4,
-        suit: "White Suit"
-    }
-
-];
-
-
-/* =========================================================
-   LEVEL DATA
-========================================================= */
-
-const levels = {
-
-    1: {
-        title: "Earth Workshop",
-        icon: "🌍",
-        description:
-            "Train on Earth and learn the skills you will need during your space mission.",
-
-        tasks: [
-
-            {
-                title: "Fix the Oxygen System",
-                icon: "🫁",
-                description:
-                    "Keep the oxygen system safe and working.",
-                subtasks: [
-                    "🔌 Fix the Circuit",
-                    "🔧 Repair the Pipe",
-                    "🫁 Set Oxygen Level"
-                ]
-            },
-
-            {
-                title: "Build Radiation Shielding",
-                icon: "☢️",
-                description:
-                    "Learn to protect yourself from dangerous radiation.",
-                subtasks: [
-                    "🧱 Choose the Material",
-                    "🛡️ Place the Shields",
-                    "☄️ Dodge the Asteroids"
-                ]
-            },
-
-            {
-                title: "Generate Power",
-                icon: "⚡",
-                description:
-                    "Set up solar panels and produce enough electricity.",
-                subtasks: [
-                    "📍 Find the Spot",
-                    "☀️ Place the Panel",
-                    "🔋 Connect the Power"
-                ]
-            }
-
-        ]
+        endurance: 3
     },
 
-
-    2: {
-        title: "Moon Survival",
-        icon: "🌕",
-        description:
-            "You have reached the Moon! Keep yourself and your crew alive.",
-
-        tasks: [
-
-            {
-                title: "Maintain Life Support",
-                icon: "🫁",
-                description:
-                    "Keep the Moon base life-support system running.",
-                subtasks: [
-                    "📊 Check the Oxygen",
-                    "🔧 Fix the Leak",
-                    "🎛️ Restart the System"
-                ]
-            },
-
-            {
-                title: "Grow Food",
-                icon: "🌱",
-                description:
-                    "Grow enough food to keep the crew healthy.",
-                subtasks: [
-                    "🌱 Plant the Seeds",
-                    "💧 Give Water",
-                    "💡 Turn on the Lights"
-                ]
-            },
-
-            {
-                title: "Save Power",
-                icon: "⚡",
-                description:
-                    "Manage limited electricity during a power shortage.",
-                subtasks: [
-                    "🔎 Find the Problem",
-                    "🔌 Turn Off Systems",
-                    "⚡ Balance the Power"
-                ]
-            }
-
-        ]
+    bear: {
+        name: "Bear",
+        emoji: "🐻",
+        suit: "Grey",
+        immunity: 5,
+        technical: 3,
+        endurance: 5
     },
 
+    cat: {
+        name: "Cat",
+        emoji: "🐱",
+        suit: "Lavender",
+        immunity: 3,
+        technical: 5,
+        endurance: 4
+    },
 
-    3: {
-        title: "Return to Earth",
-        icon: "🚀",
-        description:
-            "Survive the final challenges and prepare your spacecraft for the journey home.",
-
-        tasks: [
-
-            {
-                title: "Survive a Radiation Storm",
-                icon: "☢️",
-                description:
-                    "Find the safest shelter before the radiation storm arrives.",
-                subtasks: [
-                    "📡 Detect the Storm",
-                    "🛡️ Find the Safe Zone",
-                    "🏃 Reach the Shelter"
-                ]
-            },
-
-            {
-                title: "Manage Food Supplies",
-                icon: "🌱",
-                description:
-                    "Ration your remaining food until departure.",
-                subtasks: [
-                    "🔢 Count the Food",
-                    "📦 Pack Supplies",
-                    "🍎 Ration the Food"
-                ]
-            },
-
-            {
-                title: "Launch Back to Earth",
-                icon: "🚀",
-                description:
-                    "Prepare the spacecraft and launch safely back to Earth.",
-                subtasks: [
-                    "🛰️ Check Systems",
-                    "📦 Load Supplies",
-                    "🚀 Launch Rocket"
-                ]
-            }
-
-        ]
+    dog: {
+        name: "Dog",
+        emoji: "🐶",
+        suit: "Light Blue",
+        immunity: 4,
+        technical: 4,
+        endurance: 5
     }
 
 };
@@ -221,185 +112,4121 @@ const levels = {
 
 const game = {
 
-    name: "",
+    astronautName: "Junior Astronaut",
 
-    characterIndex: 0,
+    character: "panda",
 
     mode: "basic",
 
     energy: 100,
 
+    immunity: 100,
+
     experience: 0,
 
-    unlockedLevel: 1,
-
-    completedTasks: {
-        1: [],
-        2: [],
-        3: []
-    },
-
-    currentLevel: 1,
+    currentLevel: 0,
 
     currentTask: 0,
 
     currentSubtask: 0,
 
+    completedTasks: [],
+
+    unlockedLevels: [true, false, false],
+
+    taskProgress: {},
+
     timer: 60,
 
     timerInterval: null,
 
+    taskCompleted: false,
+
     taskEnergySpent: 0,
 
-    temporaryData: {},
-
-    taskCompleted: false
+    temporaryData: {}
 
 };
 
 
 /* =========================================================
-   DOM HELPERS
+   LEVEL DATA
 ========================================================= */
 
-function $(id) {
+const levels = [
 
-    return document.getElementById(id);
+    {
+        number: 1,
 
+        icon: "🌍",
+
+        title: "EARTH TRAINING",
+
+        subtitle: "Workshop / Astronaut Training",
+
+        location: "Earth Workshop",
+
+        description:
+            "Prepare yourself for the journey to the Moon by learning spacecraft systems, astronaut movement and robotics.",
+
+        tasks: [
+
+            {
+                title: "Build & Power the Spacecraft",
+
+                icon: "🛰️",
+
+                reward: 25,
+
+                message:
+                    "Excellent work, Astronaut! You built and powered your spacecraft!",
+
+                subtasks: [
+                    "Connect the Spacecraft Modules",
+                    "Connect & Power the Systems",
+                    "Perform the Final Systems Check"
+                ]
+            },
+
+            {
+                title: "Astronaut Training Course",
+
+                icon: "🧑‍🚀",
+
+                reward: 25,
+
+                message:
+                    "Amazing! You moved like a real astronaut!",
+
+                subtasks: [
+                    "Suit Up",
+                    "Zero-Gravity Training",
+                    "Emergency Return"
+                ]
+            },
+
+            {
+                title: "Robot Arm Rescue",
+
+                icon: "🦾",
+
+                reward: 25,
+
+                message:
+                    "Robotic arm mission successful! You're ready for the Moon!",
+
+                subtasks: [
+                    "Find the Target",
+                    "Control the Robotic Arm",
+                    "Grab & Place the Object"
+                ]
+            }
+
+        ]
+    },
+
+
+    {
+        number: 2,
+
+        icon: "🌕",
+
+        title: "LUNAR SURVIVAL",
+
+        subtitle: "Moon Survival & Exploration",
+
+        location: "Moon",
+
+        description:
+            "Explore the lunar surface, operate a rover and build the infrastructure needed for life on the Moon.",
+
+        tasks: [
+
+            {
+                title: "Lunar Explorer",
+
+                icon: "🧭",
+
+                reward: 30,
+
+                message:
+                    "Great exploration, Astronaut! You found the lunar research site!",
+
+                subtasks: [
+                    "Read the Lunar Map",
+                    "Cross the Moon",
+                    "Find the Research Site"
+                ]
+            },
+
+            {
+                title: "Moon Rover Mission",
+
+                icon: "🚙",
+
+                reward: 30,
+
+                message:
+                    "Rover mission complete! You explored farther than ever!",
+
+                subtasks: [
+                    "Prepare the Rover",
+                    "Drive Across the Moon",
+                    "Return Before Battery Runs Out"
+                ]
+            },
+
+            {
+                title: "Build the Moon Base",
+
+                icon: "🏠",
+
+                reward: 30,
+
+                message:
+                    "We have a Moon base! You built a home on another world!",
+
+                subtasks: [
+                    "Place the Habitat",
+                    "Build the Power System",
+                    "Activate Life Support & Communication"
+                ]
+            }
+
+        ]
+    },
+
+
+    {
+        number: 3,
+
+        icon: "🚨",
+
+        title: "RETURN TO EARTH",
+
+        subtitle: "Mission Emergency & Safe Return",
+
+        location: "Lunar Base",
+
+        description:
+            "Handle an emergency, prepare the spacecraft and complete the final journey home.",
+
+        tasks: [
+
+            {
+                title: "Handle the Moon Base Emergency",
+
+                icon: "🚨",
+
+                reward: 35,
+
+                message:
+                    "Emergency handled! You kept the Moon base safe!",
+
+                subtasks: [
+                    "Find the Problem",
+                    "Repair the System",
+                    "Reach the Safe Area"
+                ]
+            },
+
+            {
+                title: "Prepare for Departure",
+
+                icon: "🔋",
+
+                reward: 35,
+
+                message:
+                    "Everything is ready! Earth, here we come!",
+
+                subtasks: [
+                    "Pack the Essentials",
+                    "Balance the Supplies",
+                    "Final Spacecraft Check"
+                ]
+            },
+
+            {
+                title: "Return to Earth",
+
+                icon: "🌍",
+
+                reward: 50,
+
+                message:
+                    "YOU DID IT, ASTRONAUT! You travelled to the Moon, completed your mission, and safely returned home!",
+
+                subtasks: [
+                    "Launch the Spacecraft",
+                    "Navigate Home",
+                    "Complete the Landing"
+                ]
+            }
+
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+function initGame() {
+
+    bindStartButton();
+
+    bindCharacterChoices();
+
+    bindModeChoices();
+
+    bindCreationButton();
+
+    bindLevelCards();
+
+    bindBeginLevelButton();
+
+    bindModalButton();
+
+    bindRetryButton();
+
+    bindPlayAgainButton();
+
+    hideUnusedElements();
+
+    updateCharacterPreview();
+
+    updateGlobalHUD();
+
+    createShootingStar();
+
+    setInterval(createShootingStar, 30000);
 }
 
 
-function safeText(id, value) {
+/* =========================================================
+   START BUTTON
+========================================================= */
 
-    const element = $(id);
+function bindStartButton() {
 
-    if (element) {
-        element.textContent = value;
-    }
+    onClick("startButton", () => {
 
-}
+        showScreen("launchScreen");
 
+        startLaunchSequence();
 
-function safeBar(id, value) {
-
-    const element = $(id);
-
-    if (!element) {
-        return;
-    }
-
-    element.style.width =
-        `${Math.max(0, Math.min(100, value))}%`;
-
-}
-
-
-function showScreen(id) {
-
-    document
-        .querySelectorAll(".screen")
-        .forEach(screen => {
-
-            screen.classList.remove("active");
-
-        });
-
-    const screen = $(id);
-
-    if (!screen) {
-        return;
-    }
-
-    screen.classList.add("active");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
     });
 
 }
 
 
 /* =========================================================
-   OLD UI CLEANUP
+   LAUNCH SEQUENCE
 ========================================================= */
 
-function hideUnusedUI() {
+function startLaunchSequence() {
+
+    const rocket = $("launchRocket");
+
+    const caption = $("launchCaption");
+
+    const countdown = $("countdownNumber");
+
+    const subtext = $("launchSubtext");
+
+    if (!rocket || !caption || !countdown) {
+        showScreen("creationScreen");
+        return;
+    }
+
+    rocket.classList.remove("launching");
+
+    caption.textContent =
+        "Are you ready for the mission buddy?";
+
+    subtext.textContent =
+        "Preparing your spacecraft for launch...";
+
+    const numbers = ["3", "2", "1"];
+
+    let index = 0;
+
+    countdown.textContent = numbers[index];
+
+    const interval = setInterval(() => {
+
+        index++;
+
+        if (index < numbers.length) {
+
+            countdown.textContent =
+                numbers[index];
+
+            countdown.style.animation = "none";
+
+            void countdown.offsetWidth;
+
+            countdown.style.animation =
+                "countdownPop 0.8s ease";
+
+        } else {
+
+            clearInterval(interval);
+
+            caption.textContent =
+                "LAUNCH! 🚀";
+
+            subtext.textContent =
+                "Travelling toward the Moon...";
+
+            rocket.classList.add("launching");
+
+            setTimeout(() => {
+
+                showScreen("creationScreen");
+
+            }, 3000);
+        }
+
+    }, 1000);
+}
+
+
+/* =========================================================
+   CHARACTER SELECTION
+========================================================= */
+
+function bindCharacterChoices() {
+
+    document
+        .querySelectorAll(".character-choice")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                document
+                    .querySelectorAll(".character-choice")
+                    .forEach(item => {
+                        item.classList.remove("selected");
+                    });
+
+                button.classList.add("selected");
+
+                game.character =
+                    button.dataset.character;
+
+                updateCharacterPreview();
+
+            });
+
+        });
+
+}
+
+
+function updateCharacterPreview() {
+
+    const character =
+        characters[game.character];
+
+    if (!character) {
+        return;
+    }
+
+    setText(
+        "characterPreview",
+        character.emoji
+    );
+
+    setText(
+        "previewTechnical",
+        stars(character.technical)
+    );
+
+    setText(
+        "previewEndurance",
+        stars(character.endurance)
+    );
+
+    setText(
+        "previewImmunity",
+        stars(character.immunity)
+    );
+
+    const nameInput =
+        $("astronautName");
+
+    if (nameInput) {
+
+        setText(
+            "previewName",
+            nameInput.value.trim() ||
+            "Junior Astronaut"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   NAME INPUT
+========================================================= */
+
+function bindCreationButton() {
+
+    const input = $("astronautName");
+
+    if (input) {
+
+        input.addEventListener(
+            "input",
+            updateCharacterPreview
+        );
+
+    }
+
+    onClick(
+        "createAstronautButton",
+        createAstronaut
+    );
+
+}
+
+
+function createAstronaut() {
+
+    const input =
+        $("astronautName");
+
+    game.astronautName =
+        input?.value.trim() ||
+        "Junior Astronaut";
+
+    game.energy = 100;
+
+    game.immunity = 100;
+
+    game.experience = 0;
+
+    game.currentLevel = 0;
+
+    game.currentTask = 0;
+
+    game.currentSubtask = 0;
+
+    game.completedTasks = [];
+
+    game.unlockedLevels =
+        [true, false, false];
+
+    game.taskProgress = {};
+
+    updateGlobalHUD();
+
+    updateLevelSelection();
+
+    showScreen("levelSelectionScreen");
+
+}
+
+
+/* =========================================================
+   MODE SELECTION
+========================================================= */
+
+function bindModeChoices() {
+
+    document
+        .querySelectorAll(".mode-card")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                document
+                    .querySelectorAll(".mode-card")
+                    .forEach(item => {
+                        item.classList.remove("selected");
+                    });
+
+                button.classList.add("selected");
+
+                game.mode =
+                    button.dataset.mode;
+
+            });
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL SELECTION
+========================================================= */
+
+function bindLevelCards() {
+
+    document
+        .querySelectorAll(".level-card")
+        .forEach(card => {
+
+            card.addEventListener("click", () => {
+
+                const level =
+                    Number(card.dataset.level);
+
+                if (!game.unlockedLevels[level]) {
+                    return;
+                }
+
+                openLevel(level);
+
+            });
+
+        });
+
+}
+
+
+function updateLevelSelection() {
+
+    document
+        .querySelectorAll(".level-card")
+        .forEach(card => {
+
+            const level =
+                Number(card.dataset.level);
+
+            const unlocked =
+                game.unlockedLevels[level];
+
+            card.classList.toggle(
+                "unlocked",
+                unlocked
+            );
+
+            card.classList.toggle(
+                "locked",
+                !unlocked
+            );
+
+            const status =
+                card.querySelector(".level-status");
+
+            if (status) {
+                status.textContent =
+                    unlocked ? "🔓" : "🔒";
+            }
+
+        });
+
+    setText(
+        "levelAvatar",
+        characters[game.character].emoji
+    );
+
+    setText(
+        "levelAstronautName",
+        game.astronautName
+    );
+
+    setText(
+        "levelXP",
+        `${game.experience} XP`
+    );
+
+}
+
+
+/* =========================================================
+   OPEN LEVEL
+========================================================= */
+
+function openLevel(level) {
+
+    if (!levels[level]) {
+        return;
+    }
+
+    game.currentLevel = level;
+
+    game.currentTask = 0;
+
+    game.currentSubtask = 0;
+
+    game.energy = 100;
+
+    game.immunity = 100;
+
+    updateGlobalHUD();
+
+    showLevelIntro(level);
+
+}
+
+
+/* =========================================================
+   LEVEL INTRO
+========================================================= */
+
+function showLevelIntro(level) {
+
+    const data =
+        levels[level];
+
+    setText(
+        "levelIntroIcon",
+        data.icon
+    );
+
+    setText(
+        "levelIntroLabel",
+        `LEVEL ${data.number}`
+    );
+
+    setText(
+        "levelIntroTitle",
+        data.title
+    );
+
+    setText(
+        "levelIntroSubtitle",
+        data.subtitle
+    );
+
+    setText(
+        "levelIntroDescription",
+        data.description
+    );
+
+    setText(
+        "robotIntroMessage",
+        getLevelRobotMessage(level)
+    );
+
+    showScreen("levelIntroScreen");
+
+}
+
+
+function getLevelRobotMessage(level) {
+
+    if (level === 0) {
+        return "I'll train you for your first lunar mission!";
+    }
+
+    if (level === 1) {
+        return "Welcome to the Moon, Astronaut!";
+    }
+
+    return "Something unexpected has happened. Stay calm and follow my instructions!";
+}
+
+
+/* =========================================================
+   BEGIN LEVEL
+========================================================= */
+
+function bindBeginLevelButton() {
+
+    onClick(
+        "beginLevelButton",
+        () => {
+
+            startTask();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   START TASK
+========================================================= */
+
+function startTask() {
+
+    clearTimer();
+
+    clearSubtaskEffects();
+
+    game.currentSubtask = 0;
+
+    game.taskCompleted = false;
+
+    game.taskEnergySpent = 0;
+
+    game.temporaryData = {};
+
+    game.timer = 60;
+
+    updateGlobalHUD();
+
+    updateGameplayHUD();
+
+    renderCurrentSubtask();
+
+    updateTimerVisibility();
+
+    if (game.mode === "advanced") {
+        startTimer();
+    }
+
+    showScreen("gameScreen");
+
+}
+
+
+/* =========================================================
+   GAMEPLAY HUD
+========================================================= */
+
+function updateGameplayHUD() {
+
+    const level =
+        levels[game.currentLevel];
+
+    if (!level) {
+        return;
+    }
+
+    const task =
+        level.tasks[game.currentTask];
+
+    if (!task) {
+        return;
+    }
+
+    setText(
+        "locationIcon",
+        level.icon
+    );
+
+    setText(
+        "locationName",
+        level.location
+    );
+
+    setText(
+        "currentLevelLabel",
+        `LEVEL ${level.number}`
+    );
+
+    setText(
+        "gameLevelLabel",
+        `LEVEL ${level.number} — ${level.title}`
+    );
+
+    setText(
+        "gameTaskTitle",
+        task.title
+    );
+
+    setText(
+        "taskCounter",
+        `TASK ${game.currentTask + 1} / 3`
+    );
+
+    renderTaskList();
+
+}
+
+
+/* =========================================================
+   TASK LIST
+========================================================= */
+
+function renderTaskList() {
+
+    const container =
+        $("taskList");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const level =
+        levels[game.currentLevel];
+
+    level.tasks.forEach((task, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "task-item";
+
+        const completed =
+            game.completedTasks.includes(
+                `${game.currentLevel}-${index}`
+            );
+
+        const unlocked =
+            index <= game.currentTask;
+
+        if (index === game.currentTask) {
+            button.classList.add("current");
+        }
+
+        if (completed) {
+            button.classList.add("completed");
+        }
+
+        if (!unlocked) {
+            button.classList.add("locked");
+        }
+
+        button.innerHTML = `
+            <span class="task-icon">
+                ${completed ? "✅" : unlocked ? task.icon : "🔒"}
+            </span>
+
+            <span>
+                <small>TASK ${index + 1}</small>
+                <strong>${task.title}</strong>
+            </span>
+        `;
+
+        if (unlocked) {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        index === game.currentTask &&
+                        !game.taskCompleted
+                    ) {
+                        startTask();
+                    }
+
+                }
+            );
+
+        }
+
+        container.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================================================
+   RENDER SUBTASK
+========================================================= */
+
+function renderCurrentSubtask() {
+
+    const level =
+        levels[game.currentLevel];
+
+    const task =
+        level?.tasks[game.currentTask];
+
+    if (!task) {
+        return;
+    }
+
+    const title =
+        task.subtasks[game.currentSubtask];
+
+    setText(
+        "instructionText",
+        getInstruction(
+            game.currentLevel,
+            game.currentTask,
+            game.currentSubtask
+        )
+    );
+
+    setText(
+        "robotMessage",
+        getRobotMessage(
+            game.currentLevel,
+            game.currentTask,
+            game.currentSubtask
+        )
+    );
+
+    const scene =
+        $("gameScene");
+
+    if (!scene) {
+        return;
+    }
+
+    scene.innerHTML = "";
+
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        "mini-game";
+
+    wrapper.innerHTML = `
+        <div class="mini-title">
+            <h3>
+                ${task.icon} ${title}
+            </h3>
+
+            <p>
+                Stage ${game.currentSubtask + 1} of 3
+            </p>
+        </div>
+    `;
+
+    scene.appendChild(wrapper);
+
+    createMiniGame(
+        wrapper,
+        game.currentLevel,
+        game.currentTask,
+        game.currentSubtask
+    );
+
+}
+
+
+/* =========================================================
+   ROBOT MESSAGES
+========================================================= */
+
+function getRobotMessage(level, task, subtask) {
+
+    const messages = {
+
+        "0-0-0":
+            "Astronaut! Our spacecraft is not assembled yet. Let's build it step by step.",
+
+        "0-0-1":
+            "The spacecraft is assembled, but its systems need power. Let's connect them!",
+
+        "0-0-2":
+            "The spacecraft is almost ready! Let's make sure everything is working.",
+
+        "0-1-0":
+            "Astronauts need special equipment to survive in space. Let's prepare your spacesuit!",
+
+        "0-1-1":
+            "Space has almost no gravity. Practice moving carefully!",
+
+        "0-1-2":
+            "Training emergency! Return to the airlock!",
+
+        "0-2-0":
+            "Find the correct target for our robotic arm.",
+
+        "0-2-1":
+            "Move the robotic arm carefully toward the target.",
+
+        "0-2-2":
+            "Grab the object and bring it safely back to the spacecraft.",
+
+        "1-0-0":
+            "Your destination is Research Site Alpha. Follow the map!",
+
+        "1-0-1":
+            "Careful! Lunar craters and rocks are ahead.",
+
+        "1-0-2":
+            "Use your scanner to find Research Site Alpha.",
+
+        "1-1-0":
+            "Before driving, we need to check the rover.",
+
+        "1-1-1":
+            "Drive carefully and collect the lunar samples.",
+
+        "1-1-2":
+            "Battery is running low. Return to the base!",
+
+        "1-2-0":
+            "Every Moon base needs a safe place for astronauts to live.",
+
+        "1-2-1":
+            "The habitat needs electricity. Let's build the power system.",
+
+        "1-2-2":
+            "Now activate oxygen and communication.",
+
+        "2-0-0":
+            "Something is wrong with the base. Inspect the systems.",
+
+        "2-0-1":
+            "The faulty system needs to be repaired.",
+
+        "2-0-2":
+            "Emergency! Follow the route to the shelter!",
+
+        "2-1-0":
+            "We have limited storage space. Pack the most important supplies.",
+
+        "2-1-1":
+            "We need enough supplies for the whole journey.",
+
+        "2-1-2":
+            "Everything is packed. Let's complete the final spacecraft check.",
+
+        "2-2-0":
+            "Astronaut! Your final mission begins now. Start the launch sequence.",
+
+        "2-2-1":
+            "Earth is ahead. Stay on the correct flight path.",
+
+        "2-2-2":
+            "Control the descent and reach the safe landing zone."
+
+    };
+
+    return messages[
+        `${level}-${task}-${subtask}`
+    ] || "Follow the instructions, Astronaut!";
+}
+
+
+function getInstruction(level, task, subtask) {
+
+    const instructions = {
+
+        "0-0-0":
+            "Select each spacecraft module and place it into its matching position.",
+
+        "0-0-1":
+            "Connect the battery to Life Support, Communication and Navigation.",
+
+        "0-0-2":
+            "Repair every red system until all spacecraft indicators become green.",
+
+        "0-1-0":
+            "Select the correct equipment and place every item on the astronaut.",
+
+        "0-1-1":
+            "Use the movement controls to collect the floating wrench.",
+
+        "0-1-2":
+            "Reach the glowing airlock while avoiding obstacles.",
+
+        "0-2-0":
+            "Find and select the blue sample container.",
+
+        "0-2-1":
+            "Move the robotic arm until the gripper reaches the target.",
+
+        "0-2-2":
+            "Grab the object, move it back and release it in the storage area.",
+
+        "1-0-0":
+            "Choose the route leading from your astronaut to Research Site Alpha.",
+
+        "1-0-1":
+            "Move across the lunar surface without hitting the hazards.",
+
+        "1-0-2":
+            "Scan the objects and select Research Site Alpha.",
+
+        "1-1-0":
+            "Inspect the rover and repair the damaged system.",
+
+        "1-1-1":
+            "Drive the rover, avoid craters and collect the samples.",
+
+        "1-1-2":
+            "Choose the short route and return to the lunar base.",
+
+        "1-2-0":
+            "Place the habitat on the highlighted foundation.",
+
+        "1-2-1":
+            "Connect Solar Panels → Battery → Habitat.",
+
+        "1-2-2":
+            "Connect oxygen and communication, then activate the base.",
+
+        "2-0-0":
+            "Inspect the four systems and identify the abnormal reading.",
+
+        "2-0-1":
+            "Connect the repair pieces in the correct order.",
+
+        "2-0-2":
+            "Navigate through the emergency area and reach the shelter.",
+
+        "2-1-0":
+            "Select the essential equipment needed for the return journey.",
+
+        "2-1-1":
+            "Balance oxygen, water, food and power supplies.",
+
+        "2-1-2":
+            "Check every spacecraft system and repair anything marked red.",
+
+        "2-2-0":
+            "Activate Power, Navigation, Communication and Engine.",
+
+        "2-2-1":
+            "Use left and right controls to stay on the flight path.",
+
+        "2-2-2":
+            "Keep the spacecraft inside the green landing zone."
+
+    };
+
+    return instructions[
+        `${level}-${task}-${subtask}`
+    ] || "Complete the activity.";
+}
+
+
+/* =========================================================
+   MINI GAME ROUTER
+========================================================= */
+
+function createMiniGame(wrapper, level, task, subtask) {
+
+    const key =
+        `${level}-${task}-${subtask}`;
+
+    switch (key) {
+
+        case "0-0-0":
+            spacecraftModulesGame(wrapper);
+            break;
+
+        case "0-0-1":
+            powerSystemsGame(wrapper);
+            break;
+
+        case "0-0-2":
+            systemsCheckGame(wrapper);
+            break;
+
+        case "0-1-0":
+            suitUpGame(wrapper);
+            break;
+
+        case "0-1-1":
+            zeroGravityGame(wrapper);
+            break;
+
+        case "0-1-2":
+            emergencyAirlockGame(wrapper);
+            break;
+
+        case "0-2-0":
+            targetSelectionGame(wrapper);
+            break;
+
+        case "0-2-1":
+            roboticArmControlGame(wrapper);
+            break;
+
+        case "0-2-2":
+            roboticArmGrabGame(wrapper);
+            break;
+
+        case "1-0-0":
+            lunarMapGame(wrapper);
+            break;
+
+        case "1-0-1":
+            lunarMovementGame(wrapper);
+            break;
+
+        case "1-0-2":
+            researchSiteGame(wrapper);
+            break;
+
+        case "1-1-0":
+            roverPreparationGame(wrapper);
+            break;
+
+        case "1-1-1":
+            roverDrivingGame(wrapper);
+            break;
+
+        case "1-1-2":
+            roverReturnGame(wrapper);
+            break;
+
+        case "1-2-0":
+            habitatGame(wrapper);
+            break;
+
+        case "1-2-1":
+            moonPowerGame(wrapper);
+            break;
+
+        case "1-2-2":
+            moonBaseSystemsGame(wrapper);
+            break;
+
+        case "2-0-0":
+            emergencyDiagnosisGame(wrapper);
+            break;
+
+        case "2-0-1":
+            emergencyRepairGame(wrapper);
+            break;
+
+        case "2-0-2":
+            shelterGame(wrapper);
+            break;
+
+        case "2-1-0":
+            suppliesGame(wrapper);
+            break;
+
+        case "2-1-1":
+            balanceSuppliesGame(wrapper);
+            break;
+
+        case "2-1-2":
+            finalCheckGame(wrapper);
+            break;
+
+        case "2-2-0":
+            launchSystemsGame(wrapper);
+            break;
+
+        case "2-2-1":
+            navigationGame(wrapper);
+            break;
+
+        case "2-2-2":
+            landingGame(wrapper);
+            break;
+
+        default:
+            createSimpleCompletionGame(wrapper);
+    }
+
+}
+
+
+/* =========================================================
+   LEVEL 1 — TASK 1
+========================================================= */
+
+function spacecraftModulesGame(wrapper) {
+
+    const modules = [
+        ["🏠", "Habitat", "habitat"],
+        ["🔋", "Power", "power"],
+        ["🫧", "Life Support", "life"],
+        ["📡", "Communication", "communication"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="action-grid" id="moduleGrid"></div>
+        <button class="mini-action" id="moduleContinue">
+            CONNECT MODULES
+        </button>
+    `;
+
+    const grid = wrapper.querySelector("#moduleGrid");
+
+    modules.forEach(item => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">${item[0]}</span>
+            <strong>${item[1]}</strong>
+            <small>Click to place</small>
+        `;
+
+        button.addEventListener("click", () => {
+
+            if (button.classList.contains("correct")) {
+                return;
+            }
+
+            button.classList.add("correct");
+
+            changeImmunity(
+                -getMistakePenalty()
+            );
+
+        });
+
+        grid.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#moduleContinue")
+        .addEventListener("click", () => {
+
+            const connected =
+                grid.querySelectorAll(".correct").length;
+
+            if (connected === modules.length) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Place all four spacecraft modules first."
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL 1 — POWER SYSTEMS
+========================================================= */
+
+function powerSystemsGame(wrapper) {
+
+    const systems = [
+        ["🫧", "Life Support"],
+        ["📡", "Communication"],
+        ["🧭", "Navigation"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="circuit" id="powerCircuit"></div>
+
+        <button class="mini-action" id="powerContinue">
+            ACTIVATE SYSTEMS
+        </button>
+    `;
+
+    const circuit =
+        wrapper.querySelector("#powerCircuit");
+
+    systems.forEach((system, index) => {
+
+        if (index > 0) {
+
+            const arrow =
+                document.createElement("div");
+
+            arrow.className =
+                "circuit-arrow";
+
+            arrow.textContent = "→";
+
+            circuit.appendChild(arrow);
+
+        }
+
+        const node =
+            document.createElement("button");
+
+        node.className =
+            "circuit-node";
+
+        node.innerHTML =
+            `${system[0]}<br>${system[1]}`;
+
+        node.addEventListener("click", () => {
+
+            node.classList.toggle("connected");
+
+        });
+
+        circuit.appendChild(node);
+
+    });
+
+    wrapper
+        .querySelector("#powerContinue")
+        .addEventListener("click", () => {
+
+            const connected =
+                circuit.querySelectorAll(".connected");
+
+            if (connected.length === systems.length) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Connect all essential spacecraft systems."
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   SYSTEM CHECK
+========================================================= */
+
+function systemsCheckGame(wrapper) {
+
+    const systems = [
+        ["🫧", "Oxygen"],
+        ["🔋", "Battery"],
+        ["📡", "Communication"],
+        ["🧭", "Navigation"],
+        ["🌡️", "Temperature"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="system-panel" id="systemPanel"></div>
+    `;
+
+    const panel =
+        wrapper.querySelector("#systemPanel");
+
+    systems.forEach((system, index) => {
+
+        const item =
+            document.createElement("button");
+
+        item.className =
+            "system-item";
+
+        item.innerHTML = `
+            <div class="system-icon">${system[0]}</div>
+            <small>${system[1]}</small>
+            <div class="system-status">
+                ${index < 2 ? "🔴 CHECK" : "🟢 READY"}
+            </div>
+        `;
+
+        if (index >= 2) {
+            item.classList.add("ready");
+        }
+
+        item.addEventListener("click", () => {
+
+            item.classList.add("ready");
+
+            const status =
+                item.querySelector(".system-status");
+
+            if (status) {
+                status.textContent =
+                    "🟢 READY";
+            }
+
+        });
+
+        panel.appendChild(item);
+
+    });
+
+    setTimeout(() => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "mini-action";
+
+        button.textContent =
+            "COMPLETE SYSTEM CHECK";
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const ready =
+                    panel.querySelectorAll(".ready").length;
+
+                if (ready === systems.length) {
+                    completeSubtask();
+                } else {
+                    wrongAttempt(
+                        "Check and repair every red system."
+                    );
+                }
+
+            }
+        );
+
+        wrapper.appendChild(button);
+
+    }, 100);
+
+}
+
+
+/* =========================================================
+   LEVEL 1 — TASK 2
+========================================================= */
+
+function suitUpGame(wrapper) {
+
+    const equipment = [
+        ["🪖", "Helmet"],
+        ["🧤", "Gloves"],
+        ["🥾", "Boots"],
+        ["🎒", "Oxygen Pack"],
+        ["📻", "Communication"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="action-grid" id="suitGrid"></div>
+
+        <button class="mini-action" id="suitButton">
+            CHECK SUIT
+        </button>
+    `;
+
+    const grid =
+        wrapper.querySelector("#suitGrid");
+
+    equipment.forEach(item => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">${item[0]}</span>
+            <strong>${item[1]}</strong>
+            <small>Attach to astronaut</small>
+        `;
+
+        button.addEventListener("click", () => {
+
+            button.classList.toggle("correct");
+
+        });
+
+        grid.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#suitButton")
+        .addEventListener("click", () => {
+
+            if (
+                grid.querySelectorAll(".correct").length ===
+                equipment.length
+            ) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Attach every piece of astronaut equipment."
+                );
+            }
+
+        });
+
+}
+
+
+function zeroGravityGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map" id="zeroGravityMap">
+
+            <div
+                class="map-object"
+                style="left:20%;top:35%;"
+            >
+                🧑‍🚀
+            </div>
+
+            <button
+                class="map-object"
+                id="wrenchTarget"
+                style="left:75%;top:55%;"
+            >
+                🔧
+            </button>
+
+            <div
+                class="map-object"
+                style="left:45%;top:25%;"
+            >
+                🪨
+            </div>
+
+            <div
+                class="map-object"
+                style="left:65%;top:78%;"
+            >
+                🛰️
+            </div>
+
+        </div>
+
+        <div class="direction-controls">
+
+            <button data-dir="up">↑</button>
+            <button data-dir="left">←</button>
+            <button data-dir="center">●</button>
+            <button data-dir="right">→</button>
+            <button data-dir="down">↓</button>
+
+        </div>
+
+        <button class="mini-action" id="collectWrench">
+            COLLECT WRENCH 🔧
+        </button>
+    `;
+
+    let moves = 0;
+
+    wrapper
+        .querySelectorAll(
+            ".direction-controls button"
+        )
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                if (
+                    button.dataset.dir !==
+                    "center"
+                ) {
+                    moves++;
+                }
+
+            });
+
+        });
+
+    wrapper
+        .querySelector("#collectWrench")
+        .addEventListener("click", () => {
+
+            if (moves >= 2) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Move through the zero-gravity area before collecting the wrench."
+                );
+
+            }
+
+        });
+
+}
+
+
+function emergencyAirlockGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map">
+
+            <div
+                class="map-object"
+                style="left:15%;top:50%;"
+            >
+                🧑‍🚀
+            </div>
+
+            <div
+                class="map-object"
+                style="left:35%;top:30%;"
+            >
+                🪨
+            </div>
+
+            <div
+                class="map-object"
+                style="left:55%;top:70%;"
+            >
+                ☄️
+            </div>
+
+            <button
+                class="map-object target"
+                id="airlock"
+                style="left:82%;top:45%;"
+            >
+                🚪
+            </button>
+
+        </div>
+
+        <button class="mini-action" id="reachAirlock">
+            REACH AIRLOCK 🚪
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#reachAirlock")
+        .addEventListener("click", () => {
+
+            completeSubtask();
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL 1 — TASK 3
+========================================================= */
+
+function targetSelectionGame(wrapper) {
+
+    const targets = [
+        ["🧰", "Tool Box"],
+        ["🔵", "Blue Sample Container"],
+        ["🪨", "Moon Rock"],
+        ["📦", "Equipment Box"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="action-grid" id="targetGrid"></div>
+    `;
+
+    const grid =
+        wrapper.querySelector("#targetGrid");
+
+    targets.forEach(target => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">${target[0]}</span>
+            <strong>${target[1]}</strong>
+        `;
+
+        button.addEventListener("click", () => {
+
+            if (target[1] === "Blue Sample Container") {
+
+                button.classList.add("correct");
+
+                setTimeout(
+                    completeSubtask,
+                    500
+                );
+
+            } else {
+
+                button.classList.add("wrong");
+
+                changeImmunity(
+                    -getMistakePenalty()
+                );
+
+            }
+
+        });
+
+        grid.appendChild(button);
+
+    });
+
+}
+
+
+function roboticArmControlGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="robot-arm">
+
+            <div class="arm-base"></div>
+
+            <div
+                id="armPart"
+                class="arm-part"
+            ></div>
+
+            <div
+                id="armGripper"
+                class="arm-gripper"
+            >
+                🦾
+            </div>
+
+        </div>
+
+        <div class="direction-controls">
+
+            <button data-arm="up">↑</button>
+            <button data-arm="left">←</button>
+            <button data-arm="center">●</button>
+            <button data-arm="right">→</button>
+            <button data-arm="down">↓</button>
+
+        </div>
+
+        <button
+            id="alignArm"
+            class="mini-action"
+        >
+            ALIGN GRIPPER
+        </button>
+    `;
+
+    let moves = 0;
+
+    wrapper
+        .querySelectorAll(
+            "[data-arm]"
+        )
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                if (
+                    button.dataset.arm !==
+                    "center"
+                ) {
+                    moves++;
+                }
+
+            });
+
+        });
+
+    wrapper
+        .querySelector("#alignArm")
+        .addEventListener("click", () => {
+
+            if (moves >= 2) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Move the arm closer to the target."
+                );
+            }
+
+        });
+
+}
+
+
+function roboticArmGrabGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="big-spacecraft">
+            🛰️
+        </div>
+
+        <div class="action-grid">
+
+            <button
+                id="grabButton"
+                class="action-card"
+            >
+                <span class="emoji">🦾</span>
+                <strong>GRAB</strong>
+                <small>Grab the sample</small>
+            </button>
+
+            <button
+                id="releaseButton"
+                class="action-card"
+            >
+                <span class="emoji">📦</span>
+                <strong>RELEASE</strong>
+                <small>Place in storage</small>
+            </button>
+
+        </div>
+    `;
+
+    let grabbed = false;
+
+    wrapper
+        .querySelector("#grabButton")
+        .addEventListener("click", () => {
+
+            grabbed = true;
+
+            wrapper
+                .querySelector("#grabButton")
+                .classList.add("correct");
+
+        });
+
+    wrapper
+        .querySelector("#releaseButton")
+        .addEventListener("click", () => {
+
+            if (grabbed) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Grab the sample before releasing it."
+                );
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL 2 — TASK 1
+========================================================= */
+
+function lunarMapGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map" id="lunarMap">
+
+            <div
+                class="map-object"
+                style="left:15%;top:70%;"
+            >
+                🧑‍🚀
+            </div>
+
+            <div
+                class="map-object"
+                style="left:35%;top:35%;"
+            >
+                🕳️
+            </div>
+
+            <div
+                class="map-object"
+                style="left:55%;top:65%;"
+            >
+                🪨
+            </div>
+
+            <button
+                class="map-object target"
+                id="researchSite"
+                style="left:82%;top:30%;"
+            >
+                🔬
+            </button>
+
+        </div>
+
+        <button
+            id="selectRoute"
+            class="mini-action"
+        >
+            SELECT ROUTE TO ALPHA
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#selectRoute")
+        .addEventListener("click", () => {
+
+            completeSubtask();
+
+        });
+
+}
+
+
+function lunarMovementGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map">
+
+            <div
+                class="map-object"
+                style="left:15%;top:75%;"
+            >
+                🧑‍🚀
+            </div>
+
+            <div
+                class="map-object"
+                style="left:35%;top:30%;"
+            >
+                🕳️
+            </div>
+
+            <div
+                class="map-object"
+                style="left:55%;top:70%;"
+            >
+                🪨
+            </div>
+
+            <div
+                class="map-object target"
+                style="left:85%;top:35%;"
+            >
+                🔬
+            </div>
+
+        </div>
+
+        <div class="direction-controls">
+
+            <button>↑</button>
+            <button>←</button>
+            <button>●</button>
+            <button>→</button>
+            <button>↓</button>
+
+        </div>
+
+        <button
+            id="crossMoon"
+            class="mini-action"
+        >
+            REACH RESEARCH AREA
+        </button>
+    `;
+
+    let movement = 0;
+
+    wrapper
+        .querySelectorAll(
+            ".direction-controls button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => movement++
+            );
+
+        });
+
+    wrapper
+        .querySelector("#crossMoon")
+        .addEventListener("click", () => {
+
+            if (movement >= 2) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Move across the lunar terrain first."
+                );
+            }
+
+        });
+
+}
+
+
+function researchSiteGame(wrapper) {
+
+    const objects = [
+        ["🪨", "Rock"],
+        ["🕳️", "Crater"],
+        ["📦", "Equipment"],
+        ["🔬", "Research Site Alpha"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="action-grid" id="researchGrid"></div>
+    `;
+
+    const grid =
+        wrapper.querySelector("#researchGrid");
+
+    objects.forEach(object => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">${object[0]}</span>
+            <strong>${object[1]}</strong>
+        `;
+
+        button.addEventListener("click", () => {
+
+            if (
+                object[1] ===
+                "Research Site Alpha"
+            ) {
+
+                button.classList.add("correct");
+
+                setTimeout(
+                    completeSubtask,
+                    500
+                );
+
+            } else {
+
+                button.classList.add("wrong");
+
+                changeImmunity(
+                    -getMistakePenalty()
+                );
+
+            }
+
+        });
+
+        grid.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================================================
+   LEVEL 2 — TASK 2
+========================================================= */
+
+function roverPreparationGame(wrapper) {
+
+    const systems = [
+        ["🔋", "Battery"],
+        ["🛞", "Wheels"],
+        ["📡", "Communication"],
+        ["🧭", "Navigation"]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="system-panel" id="roverSystems"></div>
+
+        <button
+            id="startRover"
+            class="mini-action"
+        >
+            START ROVER
+        </button>
+    `;
+
+    const panel =
+        wrapper.querySelector("#roverSystems");
+
+    systems.forEach((system, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "system-item";
+
+        button.innerHTML = `
+            <div class="system-icon">
+                ${system[0]}
+            </div>
+
+            <small>${system[1]}</small>
+
+            <div class="system-status">
+                ${index === 1 ? "🔴 DAMAGED" : "🟢 READY"}
+            </div>
+        `;
+
+        if (index !== 1) {
+            button.classList.add("ready");
+        }
+
+        button.addEventListener("click", () => {
+
+            button.classList.add("ready");
+
+            const status =
+                button.querySelector(
+                    ".system-status"
+                );
+
+            if (status) {
+                status.textContent =
+                    "🟢 READY";
+            }
+
+        });
+
+        panel.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#startRover")
+        .addEventListener("click", () => {
+
+            const ready =
+                panel.querySelectorAll(
+                    ".ready"
+                ).length;
+
+            if (ready === systems.length) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Repair the damaged rover system."
+                );
+            }
+
+        });
+
+}
+
+
+function roverDrivingGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="rover">
+            🚙
+        </div>
+
+        <div class="resource-grid">
+
+            <div class="resource">
+                <span>🔋</span>
+                <strong>Battery</strong>
+                <div class="resource-bar">
+                    <div id="roverBattery"></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <span>🔬</span>
+                <strong>Sample A</strong>
+                <small>Waiting</small>
+            </div>
+
+            <div class="resource">
+                <span>🔬</span>
+                <strong>Sample B</strong>
+                <small>Waiting</small>
+            </div>
+
+            <div class="resource">
+                <span>🧭</span>
+                <strong>Route</strong>
+                <small>Active</small>
+            </div>
+
+        </div>
+
+        <div class="rover-controls">
+
+            <button>←</button>
+            <button>↑</button>
+            <button>→</button>
+
+        </div>
+
+        <button
+            id="driveRover"
+            class="mini-action"
+        >
+            COLLECT SAMPLES
+        </button>
+    `;
+
+    let moves = 0;
+
+    wrapper
+        .querySelectorAll(
+            ".rover-controls button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    moves++;
+
+                    const battery =
+                        wrapper.querySelector(
+                            "#roverBattery"
+                        );
+
+                    if (battery) {
+
+                        const width =
+                            Math.max(
+                                20,
+                                100 - moves * 8
+                            );
+
+                        battery.style.width =
+                            `${width}%`;
+
+                    }
+
+                }
+            );
+
+        });
+
+    wrapper
+        .querySelector("#driveRover")
+        .addEventListener("click", () => {
+
+            if (moves >= 3) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Drive farther and collect the required samples."
+                );
+            }
+
+        });
+
+}
+
+
+function roverReturnGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="action-grid">
+
+            <button
+                id="shortRoute"
+                class="action-card"
+            >
+                <span class="emoji">🛣️</span>
+                <strong>SHORT ROUTE</strong>
+                <small>Lower battery use</small>
+            </button>
+
+            <button
+                id="longRoute"
+                class="action-card"
+            >
+                <span class="emoji">🌑</span>
+                <strong>LONG ROUTE</strong>
+                <small>More samples</small>
+            </button>
+
+        </div>
+    `;
+
+    wrapper
+        .querySelector("#shortRoute")
+        .addEventListener(
+            "click",
+            completeSubtask
+        );
+
+    wrapper
+        .querySelector("#longRoute")
+        .addEventListener(
+            "click",
+            () => {
+
+                changeEnergy(-8);
+
+                wrongAttempt(
+                    "The long route used too much battery. Choose the short route."
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   LEVEL 2 — TASK 3
+========================================================= */
+
+function habitatGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="big-spacecraft">
+            🏠
+        </div>
+
+        <button
+            id="placeHabitat"
+            class="mini-action"
+        >
+            PLACE HABITAT
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#placeHabitat")
+        .addEventListener(
+            "click",
+            completeSubtask
+        );
+
+}
+
+
+function moonPowerGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="circuit">
+
+            <button
+                class="circuit-node"
+                id="solar"
+            >
+                ☀️<br>
+                Solar Panels
+            </button>
+
+            <div class="circuit-arrow">→</div>
+
+            <button
+                class="circuit-node"
+                id="battery"
+            >
+                🔋<br>
+                Battery
+            </button>
+
+            <div class="circuit-arrow">→</div>
+
+            <button
+                class="circuit-node"
+                id="habitatPower"
+            >
+                🏠<br>
+                Habitat
+            </button>
+
+        </div>
+
+        <button
+            id="activatePower"
+            class="mini-action"
+        >
+            ACTIVATE POWER
+        </button>
+    `;
+
+    const nodes =
+        wrapper.querySelectorAll(
+            ".circuit-node"
+        );
+
+    nodes.forEach(node => {
+
+        node.addEventListener(
+            "click",
+            () => node.classList.add("connected")
+        );
+
+    });
+
+    wrapper
+        .querySelector("#activatePower")
+        .addEventListener("click", () => {
+
+            if (
+                wrapper.querySelectorAll(
+                    ".connected"
+                ).length === 3
+            ) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Connect Solar Panels → Battery → Habitat."
+                );
+
+            }
+
+        });
+
+}
+
+
+function moonBaseSystemsGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="system-panel">
+
+            <button class="system-item">
+                <div class="system-icon">🫧</div>
+                <small>Oxygen</small>
+                <div class="system-status">🔴 OFF</div>
+            </button>
+
+            <button class="system-item">
+                <div class="system-icon">📡</div>
+                <small>Communication</small>
+                <div class="system-status">🔴 OFF</div>
+            </button>
+
+            <button class="system-item">
+                <div class="system-icon">🔋</div>
+                <small>Power</small>
+                <div class="system-status">🟢 READY</div>
+            </button>
+
+        </div>
+
+        <button
+            id="activateBase"
+            class="mini-action"
+        >
+            ACTIVATE MOON BASE
+        </button>
+    `;
+
+    const systems =
+        wrapper.querySelectorAll(
+            ".system-item"
+        );
+
+    systems.forEach((system, index) => {
+
+        if (index < 2) {
+
+            system.addEventListener(
+                "click",
+                () => {
+
+                    system.classList.add("ready");
+
+                    const status =
+                        system.querySelector(
+                            ".system-status"
+                        );
+
+                    status.textContent =
+                        "🟢 READY";
+
+                }
+            );
+
+        }
+
+    });
+
+    wrapper
+        .querySelector("#activateBase")
+        .addEventListener("click", () => {
+
+            if (
+                wrapper.querySelectorAll(
+                    ".ready"
+                ).length >= 2
+            ) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Activate both oxygen and communication."
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL 3 — TASK 1
+========================================================= */
+
+function emergencyDiagnosisGame(wrapper) {
+
+    const systems = [
+        ["🫧", "Oxygen", true],
+        ["🔋", "Power", false],
+        ["🌡️", "Temperature", false],
+        ["📡", "Communication", false]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="system-panel" id="emergencySystems"></div>
+    `;
+
+    const panel =
+        wrapper.querySelector(
+            "#emergencySystems"
+        );
+
+    systems.forEach(system => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "system-item";
+
+        button.innerHTML = `
+            <div class="system-icon">
+                ${system[0]}
+            </div>
+
+            <small>${system[1]}</small>
+
+            <div class="system-status">
+                ${system[2] ? "🔴 LOW" : "🟢 NORMAL"}
+            </div>
+        `;
+
+        button.addEventListener("click", () => {
+
+            if (system[2]) {
+
+                button.classList.add("correct");
+
+                setTimeout(
+                    completeSubtask,
+                    500
+                );
+
+            } else {
+
+                button.classList.add("wrong");
+
+                changeImmunity(
+                    -getMistakePenalty()
+                );
+
+            }
+
+        });
+
+        panel.appendChild(button);
+
+    });
+
+}
+
+
+function emergencyRepairGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="circuit">
+
+            <button class="circuit-node">
+                🫧<br>
+                Oxygen Tank
+            </button>
+
+            <div class="circuit-arrow">→</div>
+
+            <button class="circuit-node">
+                🔧<br>
+                Repair Valve
+            </button>
+
+            <div class="circuit-arrow">→</div>
+
+            <button class="circuit-node">
+                🏠<br>
+                Habitat
+            </button>
+
+        </div>
+
+        <button
+            id="repairOxygen"
+            class="mini-action"
+        >
+            RESTORE OXYGEN
+        </button>
+    `;
+
+    const nodes =
+        wrapper.querySelectorAll(
+            ".circuit-node"
+        );
+
+    nodes.forEach(node => {
+
+        node.addEventListener(
+            "click",
+            () => node.classList.add("connected")
+        );
+
+    });
+
+    wrapper
+        .querySelector("#repairOxygen")
+        .addEventListener("click", () => {
+
+            if (
+                wrapper.querySelectorAll(
+                    ".connected"
+                ).length === 3
+            ) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Connect the repair system correctly."
+                );
+
+            }
+
+        });
+
+}
+
+
+function shelterGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map">
+
+            <div
+                class="map-object"
+                style="left:15%;top:50%;"
+            >
+                🧑‍🚀
+            </div>
+
+            <div
+                class="map-object"
+                style="left:35%;top:30%;"
+            >
+                ⚡
+            </div>
+
+            <div
+                class="map-object"
+                style="left:60%;top:65%;"
+            >
+                🚨
+            </div>
+
+            <button
+                id="shelter"
+                class="map-object target"
+                style="left:85%;top:40%;"
+            >
+                🛡️
+            </button>
+
+        </div>
+
+        <button
+            id="reachShelter"
+            class="mini-action"
+        >
+            REACH SHELTER
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#reachShelter")
+        .addEventListener(
+            "click",
+            completeSubtask
+        );
+
+}
+
+
+/* =========================================================
+   LEVEL 3 — TASK 2
+========================================================= */
+
+function suppliesGame(wrapper) {
+
+    const supplies = [
+        ["🫧", "Oxygen Tank", true],
+        ["🔧", "Repair Kit", true],
+        ["🍱", "Food", true],
+        ["💧", "Water", true],
+        ["🔬", "Science Equipment", true],
+        ["🎮", "Extra Equipment", false]
+    ];
+
+    wrapper.innerHTML += `
+        <div class="action-grid" id="supplyGrid"></div>
+
+        <button
+            id="loadSupplies"
+            class="mini-action"
+        >
+            LOAD SUPPLIES
+        </button>
+    `;
+
+    const grid =
+        wrapper.querySelector("#supplyGrid");
+
+    supplies.forEach(supply => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">${supply[0]}</span>
+            <strong>${supply[1]}</strong>
+        `;
+
+        button.dataset.essential =
+            supply[2];
+
+        button.addEventListener(
+            "click",
+            () => button.classList.toggle("selected")
+        );
+
+        grid.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#loadSupplies")
+        .addEventListener("click", () => {
+
+            const selected =
+                [...grid.querySelectorAll(
+                    ".selected"
+                )];
+
+            const correct =
+                selected.length === 5 &&
+                selected.every(
+                    button =>
+                        button.dataset.essential ===
+                        "true"
+                );
+
+            if (correct) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Pack the essential equipment only."
+                );
+            }
+
+        });
+
+}
+
+
+function balanceSuppliesGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="resource-grid">
+
+            <div class="resource">
+                <span>🫧</span>
+                <strong>Oxygen</strong>
+                <div class="resource-bar">
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <span>💧</span>
+                <strong>Water</strong>
+                <div class="resource-bar">
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <span>🍱</span>
+                <strong>Food</strong>
+                <div class="resource-bar">
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <span>🔋</span>
+                <strong>Power</strong>
+                <div class="resource-bar">
+                    <div></div>
+                </div>
+            </div>
+
+        </div>
+
+        <button
+            id="balanceButton"
+            class="mini-action"
+        >
+            BALANCE SUPPLIES
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#balanceButton")
+        .addEventListener(
+            "click",
+            completeSubtask
+        );
+
+}
+
+
+function finalCheckGame(wrapper) {
+
+    const systems = [
+        ["🫧", "Oxygen"],
+        ["⛽", "Fuel"],
+        ["📡", "Communication"],
+        ["🧭", "Navigation"],
+        ["🔥", "Engine"],
+        ["🛬", "Landing System"]
+    ];
+
+    wrapper.innerHTML += `
+        <div
+            class="system-panel"
+            id="finalSystems"
+        ></div>
+
+        <button
+            id="readyForLaunch"
+            class="mini-action"
+        >
+            CONFIRM LAUNCH READINESS
+        </button>
+    `;
+
+    const panel =
+        wrapper.querySelector(
+            "#finalSystems"
+        );
+
+    systems.forEach((system, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "system-item";
+
+        button.innerHTML = `
+            <div class="system-icon">
+                ${system[0]}
+            </div>
+
+            <small>${system[1]}</small>
+
+            <div class="system-status">
+                ${index === 2 ? "🔴 CHECK" : "🟢 READY"}
+            </div>
+        `;
+
+        if (index !== 2) {
+            button.classList.add("ready");
+        }
+
+        button.addEventListener("click", () => {
+
+            button.classList.add("ready");
+
+            button.querySelector(
+                ".system-status"
+            ).textContent =
+                "🟢 READY";
+
+        });
+
+        panel.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#readyForLaunch")
+        .addEventListener("click", () => {
+
+            if (
+                panel.querySelectorAll(
+                    ".ready"
+                ).length === systems.length
+            ) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Complete every spacecraft system check."
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   LEVEL 3 — TASK 3
+========================================================= */
+
+function launchSystemsGame(wrapper) {
+
+    const systems = [
+        ["⚡", "Power"],
+        ["🧭", "Navigation"],
+        ["📡", "Communication"],
+        ["🔥", "Engine"]
+    ];
+
+    wrapper.innerHTML += `
+        <div
+            class="action-grid"
+            id="launchSystems"
+        ></div>
+
+        <button
+            id="launchButton"
+            class="mini-action"
+        >
+            START COUNTDOWN
+        </button>
+    `;
+
+    const grid =
+        wrapper.querySelector(
+            "#launchSystems"
+        );
+
+    systems.forEach(system => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "action-card";
+
+        button.innerHTML = `
+            <span class="emoji">
+                ${system[0]}
+            </span>
+
+            <strong>${system[1]}</strong>
+
+            <small>Activate</small>
+        `;
+
+        button.addEventListener(
+            "click",
+            () => button.classList.add("correct")
+        );
+
+        grid.appendChild(button);
+
+    });
+
+    wrapper
+        .querySelector("#launchButton")
+        .addEventListener("click", () => {
+
+            if (
+                grid.querySelectorAll(
+                    ".correct"
+                ).length === systems.length
+            ) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Activate Power, Navigation, Communication and Engine."
+                );
+
+            }
+
+        });
+
+}
+
+
+function navigationGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="space-map">
+
+            <div
+                class="map-object"
+                style="left:12%;top:50%;"
+            >
+                🚀
+            </div>
+
+            <div
+                class="map-object target"
+                style="left:85%;top:50%;"
+            >
+                🌍
+            </div>
+
+            <div
+                class="map-object"
+                style="left:45%;top:25%;"
+            >
+                ☄️
+            </div>
+
+            <div
+                class="map-object"
+                style="left:62%;top:75%;"
+            >
+                🛰️
+            </div>
+
+        </div>
+
+        <div class="direction-controls">
+
+            <button>↑</button>
+            <button>←</button>
+            <button>●</button>
+            <button>→</button>
+            <button>↓</button>
+
+        </div>
+
+        <button
+            id="navigateEarth"
+            class="mini-action"
+        >
+            APPROACH EARTH
+        </button>
+    `;
+
+    let adjustments = 0;
+
+    wrapper
+        .querySelectorAll(
+            ".direction-controls button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => adjustments++
+            );
+
+        });
+
+    wrapper
+        .querySelector("#navigateEarth")
+        .addEventListener("click", () => {
+
+            if (adjustments >= 3) {
+                completeSubtask();
+            } else {
+                wrongAttempt(
+                    "Stay on the flight path and make more navigation adjustments."
+                );
+            }
+
+        });
+
+}
+
+
+function landingGame(wrapper) {
+
+    wrapper.innerHTML += `
+
+        <div class="landing-zone">
+
+            <div class="earth-horizon"></div>
+
+            <div class="safe-zone"></div>
+
+            <div
+                id="landingRocket"
+                class="landing-rocket"
+            >
+                🚀
+            </div>
+
+        </div>
+
+        <button
+            id="landButton"
+            class="mini-action"
+        >
+            LAND IN GREEN ZONE
+        </button>
+    `;
+
+    let descent = 0;
+
+    const rocket =
+        wrapper.querySelector(
+            "#landingRocket"
+        );
+
+    const interval =
+        setInterval(() => {
+
+            descent++;
+
+            if (rocket) {
+
+                rocket.style.top =
+                    `${20 + descent * 8}px`;
+
+            }
+
+            if (descent >= 6) {
+
+                clearInterval(interval);
+
+            }
+
+        }, 300);
+
+    game.temporaryData.interval =
+        interval;
+
+    wrapper
+        .querySelector("#landButton")
+        .addEventListener("click", () => {
+
+            if (descent >= 4) {
+
+                completeSubtask();
+
+            } else {
+
+                wrongAttempt(
+                    "Keep controlling the descent until the spacecraft reaches the landing zone."
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   FALLBACK MINI GAME
+========================================================= */
+
+function createSimpleCompletionGame(wrapper) {
+
+    wrapper.innerHTML += `
+        <button
+            id="completeActivity"
+            class="mini-action"
+        >
+            COMPLETE ACTIVITY
+        </button>
+    `;
+
+    wrapper
+        .querySelector("#completeActivity")
+        .addEventListener(
+            "click",
+            completeSubtask
+        );
+
+}
+
+
+/* =========================================================
+   SUBTASK COMPLETION
+========================================================= */
+
+function completeSubtask() {
+
+    if (game.taskCompleted) {
+        return;
+    }
+
+    clearSubtaskEffects();
+
+    changeEnergy(-5, false);
+
+    game.currentSubtask++;
+
+    if (game.currentSubtask >= 3) {
+
+        completeCurrentTask();
+
+        return;
+
+    }
+
+    updateGlobalHUD();
+
+    renderCurrentSubtask();
+
+}
+
+
+/* =========================================================
+   TASK COMPLETION
+========================================================= */
+
+function completeCurrentTask() {
+
+    if (game.taskCompleted) {
+        return;
+    }
+
+    clearTimer();
+
+    clearSubtaskEffects();
+
+    const level =
+        levels[game.currentLevel];
+
+    const task =
+        level.tasks[game.currentTask];
+
+    game.taskCompleted = true;
+
+    gainExperience(task.reward);
+
+    changeEnergy(-8, false);
+
+    game.completedTasks.push(
+        `${game.currentLevel}-${game.currentTask}`
+    );
+
+    updateGlobalHUD();
+
+    showSuccessModal(
+        task.title,
+        task.message,
+        `+${task.reward} XP`
+    );
+
+}
+
+
+/* =========================================================
+   NEXT TASK / LEVEL
+========================================================= */
+
+function continueAfterSuccess() {
+
+    closeModal("messageModal");
+
+    game.taskCompleted = false;
+
+    const level =
+        levels[game.currentLevel];
+
+    if (game.currentTask < 2) {
+
+        game.currentTask++;
+
+        game.currentSubtask = 0;
+
+        startTask();
+
+        return;
+    }
+
+    /* Entire level complete */
+
+    if (
+        game.currentLevel <
+        levels.length - 1
+    ) {
+
+        game.unlockedLevels[
+            game.currentLevel + 1
+        ] = true;
+
+        game.currentLevel++;
+
+        game.currentTask = 0;
+
+        game.currentSubtask = 0;
+
+        game.energy = 100;
+
+        game.immunity = 100;
+
+        updateLevelSelection();
+
+        showLevelTransition();
+
+    } else {
+
+        missionComplete();
+
+    }
+
+}
+
+
+/* =========================================================
+   LEVEL TRANSITION
+========================================================= */
+
+function showLevelTransition() {
+
+    const nextLevel =
+        levels[game.currentLevel];
+
+    setText(
+        "levelIntroIcon",
+        nextLevel.icon
+    );
+
+    setText(
+        "levelIntroLabel",
+        `LEVEL ${nextLevel.number}`
+    );
+
+    setText(
+        "levelIntroTitle",
+        nextLevel.title
+    );
+
+    setText(
+        "levelIntroSubtitle",
+        nextLevel.subtitle
+    );
+
+    setText(
+        "levelIntroDescription",
+        nextLevel.description
+    );
+
+    setText(
+        "robotIntroMessage",
+        game.currentLevel === 1
+            ? "We have reached the Moon! Your real exploration begins now."
+            : "The Moon mission is complete. But an emergency has changed everything!"
+    );
+
+    showScreen("levelIntroScreen");
+
+}
+
+
+/* =========================================================
+   MISSION COMPLETE
+========================================================= */
+
+function missionComplete() {
+
+    clearTimer();
+
+    clearSubtaskEffects();
+
+    setText(
+        "finalCharacter",
+        characters[
+            game.character
+        ].emoji
+    );
+
+    setText(
+        "finalXP",
+        `${game.experience} XP`
+    );
+
+    showScreen(
+        "missionCompleteScreen"
+    );
+
+}
+
+
+/* =========================================================
+   ENERGY
+========================================================= */
+
+function changeEnergy(
+    amount,
+    canFail = true
+) {
+
+    if (
+        game.taskCompleted &&
+        amount < 0
+    ) {
+        return;
+    }
+
+    game.energy =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                game.energy + amount
+            )
+        );
+
+    if (amount < 0) {
+
+        game.taskEnergySpent +=
+            Math.abs(amount);
+
+    }
+
+    updateGlobalHUD();
+
+    if (
+        game.energy <= 0 &&
+        canFail
+    ) {
+
+        failCurrentTask(
+            "Your energy ran out during the mission."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   IMMUNITY
+========================================================= */
+
+function changeImmunity(amount) {
+
+    let newValue =
+        game.immunity + amount;
 
     /*
-       Immunity is completely removed from gameplay.
-       If old immunity elements still exist in HTML,
-       hide them.
+       BASIC MODE:
+       Immunity is affected by mistakes,
+       but it can never reach zero.
     */
 
-    const immunityIDs = [
+    if (game.mode === "basic") {
 
-        "levelImmunityBar",
-        "levelImmunityText",
+        newValue =
+            Math.max(
+                25,
+                newValue
+            );
 
-        "immunityBar",
+    } else {
+
+        newValue =
+            Math.max(
+                0,
+                newValue
+            );
+
+    }
+
+    game.immunity =
+        Math.min(
+            100,
+            newValue
+        );
+
+    updateGlobalHUD();
+
+    if (
+        game.mode === "advanced" &&
+        game.immunity <= 0
+    ) {
+
+        failCurrentTask(
+            "Your immunity dropped too low. Restart the task to recover."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MISTAKE PENALTY
+========================================================= */
+
+function getMistakePenalty() {
+
+    const character =
+        characters[game.character];
+
+    let penalty = 7;
+
+    if (
+        character &&
+        character.technical >= 5
+    ) {
+        penalty -= 1;
+    }
+
+    if (
+        game.mode === "advanced"
+    ) {
+        penalty += 4;
+    }
+
+    return penalty;
+
+}
+
+
+/* =========================================================
+   WRONG ATTEMPT
+========================================================= */
+
+function wrongAttempt(message) {
+
+    changeEnergy(-5);
+
+    changeImmunity(
+        -getMistakePenalty()
+    );
+
+    setText(
+        "robotMessage",
+        message
+    );
+
+}
+
+
+/* =========================================================
+   EXPERIENCE
+========================================================= */
+
+function gainExperience(amount) {
+
+    game.experience += amount;
+
+    updateGlobalHUD();
+
+}
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+function startTimer() {
+
+    clearTimer();
+
+    if (game.mode !== "advanced") {
+        return;
+    }
+
+    game.timer = 60;
+
+    updateTimer();
+
+    game.timerInterval =
+        setInterval(() => {
+
+            game.timer--;
+
+            updateTimer();
+
+            if (game.timer <= 0) {
+
+                clearTimer();
+
+                failCurrentTask(
+                    "Time's up! Take a breath and try the task again."
+                );
+
+            }
+
+        }, 1000);
+
+}
+
+
+function updateTimer() {
+
+    setText(
+        "timerText",
+        game.timer
+    );
+
+    const timer =
+        $("timerText");
+
+    if (!timer) {
+        return;
+    }
+
+    timer.style.color =
+        game.timer <= 15
+            ? "#ff6f91"
+            : "#ffd86b";
+
+}
+
+
+function clearTimer() {
+
+    if (game.timerInterval) {
+
+        clearInterval(
+            game.timerInterval
+        );
+
+        game.timerInterval = null;
+
+    }
+
+}
+
+
+function updateTimerVisibility() {
+
+    const timerCard =
+        $("timerCard");
+
+    if (!timerCard) {
+        return;
+    }
+
+    if (game.mode === "basic") {
+
+        timerCard.classList.add("hidden");
+
+    } else {
+
+        timerCard.classList.remove("hidden");
+
+        updateTimer();
+
+    }
+
+}
+
+
+/* =========================================================
+   FAILURE
+========================================================= */
+
+function failCurrentTask(reason) {
+
+    if (game.taskCompleted) {
+        return;
+    }
+
+    clearTimer();
+
+    clearSubtaskEffects();
+
+    game.immunity = 0;
+
+    changeEnergy(-10, false);
+
+    updateGlobalHUD();
+
+    setText(
+        "failureMessage",
+        reason
+    );
+
+    setText(
+        "failureEnergy",
+        game.energy
+    );
+
+    setText(
+        "failureImmunity",
+        game.immunity
+    );
+
+    $("failureModal")?.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* =========================================================
+   RETRY
+========================================================= */
+
+function bindRetryButton() {
+
+    onClick(
+        "retryButton",
+        () => {
+
+            closeModal(
+                "failureModal"
+            );
+
+            /*
+                Restarting recovers immunity.
+                Energy is restored partially.
+            */
+
+            game.immunity = 100;
+
+            game.energy =
+                Math.min(
+                    100,
+                    game.energy + 20
+                );
+
+            startTask();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SUCCESS MODAL
+========================================================= */
+
+function showSuccessModal(
+    title,
+    message,
+    reward
+) {
+
+    setText(
+        "modalTitle",
+        title
+    );
+
+    setText(
+        "modalMessage",
+        message
+    );
+
+    setText(
+        "modalReward",
+        reward
+    );
+
+    setText(
+        "modalIcon",
+        "🎉"
+    );
+
+    $("messageModal")?.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function bindModalButton() {
+
+    onClick(
+        "modalButton",
+        continueAfterSuccess
+    );
+
+}
+
+
+/* =========================================================
+   PLAY AGAIN
+========================================================= */
+
+function bindPlayAgainButton() {
+
+    onClick(
+        "playAgainButton",
+        () => {
+
+            clearTimer();
+
+            game.energy = 100;
+
+            game.immunity = 100;
+
+            game.experience = 0;
+
+            game.currentLevel = 0;
+
+            game.currentTask = 0;
+
+            game.currentSubtask = 0;
+
+            game.completedTasks = [];
+
+            game.unlockedLevels =
+                [true, false, false];
+
+            game.taskCompleted = false;
+
+            game.temporaryData = {};
+
+            updateGlobalHUD();
+
+            updateLevelSelection();
+
+            showScreen(
+                "levelSelectionScreen"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GLOBAL HUD
+========================================================= */
+
+function updateGlobalHUD() {
+
+    const header =
+        $("gameHeader");
+
+    const gameplayVisible =
+        !$("gameScreen")?.classList.contains(
+            "hidden"
+        );
+
+    if (
+        gameplayVisible ||
+        game.currentLevel >= 0
+    ) {
+
+        if (header) {
+            header.classList.remove(
+                "hidden"
+            );
+        }
+
+    }
+
+    const energyBar =
+        $("energyBar");
+
+    const immunityBar =
+        $("immunityBar");
+
+    const experienceBar =
+        $("experienceBar");
+
+    if (energyBar) {
+        energyBar.style.width =
+            `${game.energy}%`;
+    }
+
+    if (immunityBar) {
+        immunityBar.style.width =
+            `${game.immunity}%`;
+    }
+
+    if (experienceBar) {
+
+        const xpProgress =
+            Math.min(
+                100,
+                game.experience % 100
+            );
+
+        experienceBar.style.width =
+            `${xpProgress}%`;
+
+    }
+
+    setText(
+        "energyText",
+        `${game.energy} / 100`
+    );
+
+    setText(
         "immunityText",
+        `${game.immunity} / 100`
+    );
 
-        "gameImmunityBar",
-        "gameImmunityText"
+    setText(
+        "experienceText",
+        `${game.experience} XP`
+    );
 
-    ];
-
-    immunityIDs.forEach(id => {
-
-        const element = $(id);
-
-        if (!element) {
-            return;
-        }
-
-        const parent =
-            element.closest(
-                ".stat-card, .stat-item, .hud-stat, .bar-container"
-            );
-
-        if (parent) {
-            parent.style.display = "none";
-        } else {
-            element.style.display = "none";
-        }
-
-    });
+}
 
 
-    /*
-       Trainee ID is no longer required.
-       Hide old ID fields if they are still in the HTML.
-    */
+/* =========================================================
+   CLEAR SUBTASK EFFECTS
+========================================================= */
 
-    const traineeIDs = [
+function clearSubtaskEffects() {
 
-        "traineeId",
-        "profileId",
-        "hudId"
+    if (
+        game.temporaryData &&
+        game.temporaryData.interval
+    ) {
 
-    ];
+        clearInterval(
+            game.temporaryData.interval
+        );
 
-    traineeIDs.forEach(id => {
+    }
 
-        const element = $(id);
+    game.temporaryData = {};
 
-        if (!element) {
-            return;
-        }
+}
 
-        const parent =
-            element.closest(
-                ".input-group, .profile-stat, .hud-stat"
-            );
 
-        if (parent) {
-            parent.style.display = "none";
-        } else {
-            element.style.display = "none";
-        }
+/* =========================================================
+   MODAL CLOSE
+========================================================= */
 
-    });
+function closeModal(id) {
+
+    const modal = $(id);
+
+    if (modal) {
+        modal.classList.add(
+            "hidden"
+        );
+    }
+
+}
+
+
+/* =========================================================
+   STARS
+========================================================= */
+
+function stars(value) {
+
+    const filled =
+        "⭐".repeat(value);
+
+    const empty =
+        "☆".repeat(5 - value);
+
+    return filled + empty;
 
 }
 
@@ -423,1008 +4250,84 @@ function createShootingStar() {
     star.className =
         "shooting-star";
 
-    if (Math.random() < 0.5) {
+    const directions = [
+        {
+            left: "-5%",
+            top: "15%",
+            rotation: "-35deg"
+        },
+        {
+            left: "30%",
+            top: "-5%",
+            rotation: "25deg"
+        },
+        {
+            left: "75%",
+            top: "5%",
+            rotation: "-40deg"
+        },
+        {
+            left: "105%",
+            top: "35%",
+            rotation: "150deg"
+        },
+        {
+            left: "-5%",
+            top: "70%",
+            rotation: "-25deg"
+        }
+    ];
 
-        star.style.right =
-            `${Math.random() * 25 + 5}%`;
+    const direction =
+        directions[
+            Math.floor(
+                Math.random() *
+                directions.length
+            )
+        ];
 
-        star.style.top =
-            `${Math.random() * 45 + 5}%`;
+    star.style.left =
+        direction.left;
 
-    } else {
+    star.style.top =
+        direction.top;
 
-        star.style.left =
-            `${Math.random() * 25 + 5}%`;
-
-        star.style.top =
-            `${Math.random() * 45 + 5}%`;
-
-        star.style.transform =
-            "rotate(35deg)";
-
-    }
+    star.style.transform =
+        `rotate(${direction.rotation})`;
 
     container.appendChild(star);
 
     setTimeout(() => {
 
-        if (star.parentNode) {
-            star.remove();
-        }
+        star.remove();
 
-    }, 2000);
-
-}
-
-
-setInterval(
-    createShootingStar,
-    10000
-);
-
-
-/* =========================================================
-   START SCREEN
-========================================================= */
-
-const startButton =
-    $("startButton");
-
-if (startButton) {
-
-    startButton.addEventListener(
-        "click",
-        startLaunchSequence
-    );
-
-}
-
-
-function startLaunchSequence() {
-
-    showScreen(
-        "countdownScreen"
-    );
-
-    const rocket =
-        $("countdownRocket");
-
-    if (rocket) {
-
-        rocket.style.transform =
-            "translateY(0)";
-
-    }
-
-    let number = 3;
-
-    safeText(
-        "countdownNumber",
-        number
-    );
-
-    safeText(
-        "countdownCaption",
-        "Prepare for launch!"
-    );
-
-    safeText(
-        "countdownMessage",
-        ""
-    );
-
-    const interval =
-        setInterval(() => {
-
-            number--;
-
-            if (number > 0) {
-
-                safeText(
-                    "countdownNumber",
-                    number
-                );
-
-                const numberElement =
-                    $("countdownNumber");
-
-                if (numberElement) {
-
-                    numberElement.style.animation =
-                        "none";
-
-                    void numberElement.offsetWidth;
-
-                    numberElement.style.animation =
-                        "countdownPop 1s ease";
-
-                }
-
-            } else {
-
-                clearInterval(interval);
-
-                safeText(
-                    "countdownNumber",
-                    "🚀"
-                );
-
-                safeText(
-                    "countdownCaption",
-                    "Are you ready for the mission buddy?"
-                );
-
-                safeText(
-                    "countdownMessage",
-                    "Launching toward the Moon..."
-                );
-
-                if (rocket) {
-
-                    rocket.style.transform =
-                        "translateY(-300px)";
-
-                }
-
-                setTimeout(() => {
-
-                    showScreen(
-                        "creationScreen"
-                    );
-
-                }, 1800);
-
-            }
-
-        }, 1000);
+    }, 3000);
 
 }
 
 
 /* =========================================================
-   CHARACTER SELECTION
+   HIDE OLD / UNUSED ELEMENTS
 ========================================================= */
 
-document
-    .querySelectorAll(".character-choice")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const index =
-                    Number(button.dataset.index);
-
-                if (
-                    Number.isNaN(index) ||
-                    !characters[index]
-                ) {
-                    return;
-                }
-
-                game.characterIndex =
-                    index;
-
-                document
-                    .querySelectorAll(".character-choice")
-                    .forEach(b => {
-
-                        b.classList.remove(
-                            "selected"
-                        );
-
-                    });
-
-                button.classList.add(
-                    "selected"
-                );
-
-                updateCharacterPreview();
-
-            }
-        );
-
-    });
-
-
-function updateCharacterPreview() {
-
-    const character =
-        characters[game.characterIndex];
-
-    if (!character) {
-        return;
-    }
-
-    safeText(
-        "characterDisplay",
-        character.emoji
-    );
-
-    safeText(
-        "characterPreviewName",
-        character.name
-    );
-
-    safeText(
-        "previewTechnical",
-        `${character.technical}/5`
-    );
-
-    safeText(
-        "previewEndurance",
-        `${character.endurance}/5`
-    );
-
-    safeText(
-        "technicalStars",
-        stars(character.technical)
-    );
-
-    safeText(
-        "enduranceStars",
-        stars(character.endurance)
-    );
-
-}
-
-
-function stars(value) {
-
-    return (
-        "⭐".repeat(value) +
-        "☆".repeat(5 - value)
-    );
-
-}
-
-
-/* =========================================================
-   GAME MODE
-========================================================= */
-
-document
-    .querySelectorAll(".mode-card")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const selectedMode =
-                    button.dataset.mode;
-
-                if (
-                    selectedMode !== "basic" &&
-                    selectedMode !== "advanced"
-                ) {
-                    return;
-                }
-
-                game.mode =
-                    selectedMode;
-
-                document
-                    .querySelectorAll(".mode-card")
-                    .forEach(b => {
-
-                        b.classList.remove(
-                            "selected"
-                        );
-
-                    });
-
-                button.classList.add(
-                    "selected"
-                );
-
-            }
-        );
-
-    });
-
-
-/* =========================================================
-   CREATE ASTRONAUT
-========================================================= */
-
-const createAstronautButton =
-    $("createAstronautButton");
-
-if (createAstronautButton) {
-
-    createAstronautButton.addEventListener(
-        "click",
-        createAstronaut
-    );
-
-}
-
-
-function createAstronaut() {
-
-    const nameInput =
-        $("traineeName");
-
-    const name =
-        nameInput
-            ? nameInput.value.trim()
-            : "";
+function hideUnusedElements() {
 
     /*
-       No trainee ID is required.
+        Compatibility protection in case an older
+        HTML version still contains these elements.
     */
 
-    if (!name) {
-
-        alert(
-            "Please enter your astronaut name! 👩‍🚀"
-        );
-
-        return;
-
-    }
-
-    game.name =
-        name;
-
-    game.energy =
-        100;
-
-    game.experience =
-        0;
-
-    game.unlockedLevel =
-        1;
-
-    game.completedTasks = {
-        1: [],
-        2: [],
-        3: []
-    };
-
-    game.currentLevel =
-        1;
-
-    game.currentTask =
-        0;
-
-    game.currentSubtask =
-        0;
-
-    game.timer =
-        60;
-
-    game.taskCompleted =
-        false;
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    game.temporaryData =
-        {};
-
-    updateProfile();
-
-    showScreen(
-        "levelScreen"
-    );
-
-}
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-function updateProfile() {
-
-    const character =
-        characters[game.characterIndex];
-
-    if (!character) {
-        return;
-    }
-
-    safeText(
-        "profileAvatar",
-        character.emoji
-    );
-
-    safeText(
-        "profileName",
-        game.name
-    );
-
-    safeText(
-        "profileMode",
-        game.mode.toUpperCase()
-    );
-
-    updateLevelStats();
-
-    updateLevelLocks();
-
-}
-
-
-function updateLevelStats() {
-
-    safeBar(
-        "levelEnergyBar",
-        game.energy
-    );
-
-    safeBar(
-        "levelExperienceBar",
-        Math.min(
-            game.experience,
-            100
-        )
-    );
-
-    safeText(
-        "levelEnergyText",
-        `${game.energy}/100`
-    );
-
-    safeText(
-        "levelExperienceText",
-        `${game.experience} XP`
-    );
-
-}
-
-
-/* =========================================================
-   LEVEL LOCKING
-========================================================= */
-
-function updateLevelLocks() {
-
-    for (
-        let level = 1;
-        level <= 3;
-        level++
-    ) {
-
-        const card =
-            $(`levelCard${level}`);
-
-        if (!card) {
-            continue;
-        }
-
-        const label =
-            card.querySelector(
-                ".unlock-label"
-            );
-
-        if (
-            level <= game.unlockedLevel
-        ) {
-
-            card.classList.remove(
-                "locked"
-            );
-
-            card.classList.add(
-                "unlocked"
-            );
-
-            if (label) {
-
-                label.textContent =
-                    "🔓 UNLOCKED";
-
-            }
-
-        } else {
-
-            card.classList.remove(
-                "unlocked"
-            );
-
-            card.classList.add(
-                "locked"
-            );
-
-            if (label) {
-
-                label.textContent =
-                    "🔒 LOCKED";
-
-            }
-
-        }
-
-    }
-
-}
-
-
-document
-    .querySelectorAll(".level-card")
-    .forEach(card => {
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                const level =
-                    Number(card.dataset.level);
-
-                if (
-                    !levels[level]
-                ) {
-                    return;
-                }
-
-                if (
-                    level >
-                    game.unlockedLevel
-                ) {
-                    return;
-                }
-
-                openLevel(level);
-
-            }
-        );
-
-    });
-
-
-/* =========================================================
-   OPEN LEVEL
-========================================================= */
-
-function openLevel(level) {
-
-    if (!levels[level]) {
-        return;
-    }
-
-    game.currentLevel =
-        level;
-
-    game.currentTask =
-        0;
-
-    game.currentSubtask =
-        0;
-
-    game.taskCompleted =
-        false;
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    clearSubtaskEffects();
-
-    safeText(
-        "introIcon",
-        levels[level].icon
-    );
-
-    safeText(
-        "introLevel",
-        `LEVEL ${level}`
-    );
-
-    safeText(
-        "introTitle",
-        levels[level].title
-    );
-
-    safeText(
-        "introDescription",
-        levels[level].description
-    );
-
-    const messages = {
-
-        1:
-            "Welcome to Earth Workshop, Cadet! I will teach you the skills you need for your mission.",
-
-        2:
-            "Welcome to the Moon! Stay calm, conserve your resources, and keep your crew safe.",
-
-        3:
-            "This is your final challenge! Complete the mission and bring everyone safely home."
-
-    };
-
-    safeText(
-        "robotIntroText",
-        messages[level]
-    );
-
-    showScreen(
-        "levelIntroScreen"
-    );
-
-}
-
-
-const beginLevelButton =
-    $("beginLevelButton");
-
-if (beginLevelButton) {
-
-    beginLevelButton.addEventListener(
-        "click",
-        () => {
-
-            /*
-               Each level starts with full energy.
-               There is no immunity system.
-            */
-
-            game.energy =
-                100;
-
-            game.currentTask =
-                0;
-
-            game.currentSubtask =
-                0;
-
-            updateProfile();
-
-            renderTaskScreen();
-
-            showScreen(
-                "taskScreen"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   TASK SCREEN
-========================================================= */
-
-function renderTaskScreen() {
-
-    const level =
-        levels[game.currentLevel];
-
-    if (!level) {
-        return;
-    }
-
-    safeText(
-        "taskLevelBadge",
-        `LEVEL ${game.currentLevel}`
-    );
-
-    safeText(
-        "taskLevelTitle",
-        level.title
-    );
-
-    const character =
-        characters[game.characterIndex];
-
-    if (character) {
-
-        safeText(
-            "hudAvatar",
-            character.emoji
-        );
-
-    }
-
-    safeText(
-        "hudName",
-        game.name
-    );
-
-    updateGameplayHUD();
-
-    const grid =
-        $("taskGrid");
-
-    if (!grid) {
-        return;
-    }
-
-    grid.innerHTML = "";
-
-    level.tasks.forEach(
-        (task, index) => {
-
-            const unlocked =
-                index === 0 ||
-                game.completedTasks[
-                    game.currentLevel
-                ].includes(index - 1);
-
-            const completed =
-                game.completedTasks[
-                    game.currentLevel
-                ].includes(index);
-
-            const card =
-                document.createElement("button");
-
-            card.className =
-                `task-card ${
-                    unlocked
-                        ? "unlocked"
-                        : "locked"
-                }`;
-
-            card.disabled =
-                !unlocked;
-
-            card.innerHTML = `
-
-                <div class="task-icon">
-                    ${task.icon}
-                </div>
-
-                <div class="task-number">
-                    TASK ${index + 1}
-                </div>
-
-                <h3>
-                    ${task.title}
-                </h3>
-
-                <p>
-                    ${task.description}
-                </p>
-
-                <div class="task-subtasks">
-
-                    ${task.subtasks
-                        .map(
-                            sub =>
-                                `<div>${sub}</div>`
-                        )
-                        .join("")
-                    }
-
-                </div>
-
-                <span class="task-start">
-
-                    ${
-                        completed
-                            ? "✅ COMPLETED"
-                            : unlocked
-                                ? "▶ START"
-                                : "🔒 LOCKED"
-                    }
-
-                </span>
-
-            `;
-
-            if (unlocked) {
-
-                card.addEventListener(
-                    "click",
-                    () => {
-
-                        startTask(index);
-
-                    }
-                );
-
-            }
-
-            grid.appendChild(
-                card
-            );
-
-        }
-    );
-
-}
-
-
-const taskBackButton =
-    $("taskBackButton");
-
-if (taskBackButton) {
-
-    taskBackButton.addEventListener(
-        "click",
-        () => {
-
-            clearInterval(
-                game.timerInterval
-            );
-
-            clearSubtaskEffects();
-
-            updateProfile();
-
-            showScreen(
-                "levelScreen"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   START TASK
-========================================================= */
-
-function startTask(taskIndex) {
-
-    const level =
-        levels[game.currentLevel];
-
-    if (
-        !level ||
-        !level.tasks[taskIndex]
-    ) {
-        return;
-    }
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    clearSubtaskEffects();
-
-    game.currentTask =
-        taskIndex;
-
-    game.currentSubtask =
-        0;
-
-    game.timer =
-        60;
-
-    game.taskEnergySpent =
-        0;
-
-    game.taskCompleted =
-        false;
-
-    game.temporaryData =
-        {};
-
-    const task =
-        level.tasks[taskIndex];
-
-    safeText(
-        "gameplayLevel",
-        `LEVEL ${game.currentLevel}`
-    );
-
-    safeText(
-        "gameplayTaskTitle",
-        task.title
-    );
-
-    const character =
-        characters[game.characterIndex];
-
-    if (character) {
-
-        safeText(
-            "astronautPlayer",
-            character.emoji
-        );
-
-    }
-
-    updateGameplayHUD();
-
-    showScreen(
-        "gameplayScreen"
-    );
-
-    renderSubtask();
-
-    updateTimerVisibility();
-
-    /*
-       Basic mode:
-       No timer.
-
-       Advanced mode:
-       60-second timer.
-    */
-
-    if (
-        game.mode === "advanced"
-    ) {
-
-        startTimer();
-
-    }
-
-}
-
-
-/* =========================================================
-   TIMER VISIBILITY
-========================================================= */
-
-function updateTimerVisibility() {
-
-    const timerText =
-        $("timerText");
-
-    const timerContainer =
-        $("timerContainer");
-
-    const gameTimer =
-        $("gameTimer");
-
-    const taskTimer =
-        $("taskTimer");
-
-    const elements = [
-        timerText,
-        timerContainer,
-        gameTimer,
-        taskTimer
-    ];
-
-    elements.forEach(element => {
-
-        if (!element) {
-            return;
-        }
-
-        const parent =
-            element.closest(
-                ".timer-container, .timer-box, .game-timer, .task-timer"
-            );
-
-        if (
-            game.mode === "basic"
-        ) {
-
-            if (parent) {
-
-                parent.style.display =
-                    "none";
-
-            } else {
-
-                element.style.display =
-                    "none";
-
-            }
-
-        } else {
-
-            if (parent) {
-
-                parent.style.display =
-                    "";
-
-            } else {
-
-                element.style.display =
-                    "";
-
-            }
-
+    [
+        "traineeId",
+        "profileId",
+        "hudId"
+    ].forEach(id => {
+
+        const element = $(id);
+
+        if (element) {
+            element.style.display =
+                "none";
         }
 
     });
@@ -1433,3516 +4336,20 @@ function updateTimerVisibility() {
 
 
 /* =========================================================
-   TIMER
+   DOM READY
 ========================================================= */
 
-function startTimer() {
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    if (
-        game.mode !== "advanced"
-    ) {
-
-        return;
-
-    }
-
-    game.timer =
-        60;
-
-    safeText(
-        "timerText",
-        game.timer
-    );
-
-    game.timerInterval =
-        setInterval(() => {
-
-            if (
-                game.mode !== "advanced" ||
-                game.taskCompleted
-            ) {
-
-                clearInterval(
-                    game.timerInterval
-                );
-
-                game.timerInterval =
-                    null;
-
-                return;
-
-            }
-
-            game.timer--;
-
-            safeText(
-                "timerText",
-                game.timer
-            );
-
-            if (
-                game.timer <= 0
-            ) {
-
-                clearInterval(
-                    game.timerInterval
-                );
-
-                game.timerInterval =
-                    null;
-
-                failCurrentTask(
-                    "Time is up! Restart the task and try again."
-                );
-
-            }
-
-        }, 1000);
-
-}
-
-
-/* =========================================================
-   HUD
-========================================================= */
-
-function updateGameplayHUD() {
-
-    safeText(
-        "energyText",
-        game.energy
-    );
-
-    safeText(
-        "experienceText",
-        game.experience
-    );
-
-    safeText(
-        "gameEnergyText",
-        game.energy
-    );
-
-    safeText(
-        "gameExperienceText",
-        `${game.experience} XP`
-    );
-
-    safeBar(
-        "energyBar",
-        game.energy
-    );
-
-    safeBar(
-        "gameEnergyBar",
-        game.energy
-    );
-
-}
-
-
-/* =========================================================
-   ENERGY
-========================================================= */
-
-function changeEnergy(
-    amount,
-    allowFailure = true
+if (
+    document.readyState === "loading"
 ) {
 
-    if (
-        game.taskCompleted &&
-        allowFailure
-    ) {
+    document.addEventListener(
+        "DOMContentLoaded",
+        initGame
+    );
 
-        return false;
+} else {
 
-    }
-
-    const oldEnergy =
-        game.energy;
-
-    game.energy =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                game.energy + amount
-            )
-        );
-
-    if (
-        amount < 0
-    ) {
-
-        game.taskEnergySpent +=
-            Math.min(
-                Math.abs(amount),
-                oldEnergy
-            );
-
-    }
-
-    updateGameplayHUD();
-
-    if (
-        allowFailure &&
-        game.energy <= 0 &&
-        !game.taskCompleted
-    ) {
-
-        failCurrentTask(
-            "You ran out of energy. Rest up and try again!"
-        );
-
-        return false;
-
-    }
-
-    return true;
+    initGame();
 
 }
-
-
-/* =========================================================
-   EXPERIENCE
-========================================================= */
-
-function gainExperience(amount) {
-
-    game.experience +=
-        amount;
-
-    updateGameplayHUD();
-
-}
-
-
-/* =========================================================
-   ROBOT MESSAGE
-========================================================= */
-
-function robotMessage(text) {
-
-    safeText(
-        "robotInstruction",
-        text
-    );
-
-}
-
-
-/* =========================================================
-   SUBTASK SYSTEM
-========================================================= */
-
-function renderSubtask() {
-
-    if (
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    const level =
-        game.currentLevel;
-
-    const levelData =
-        levels[level];
-
-    if (!levelData) {
-        return;
-    }
-
-    const task =
-        levelData.tasks[
-            game.currentTask
-        ];
-
-    if (!task) {
-        return;
-    }
-
-    const subtask =
-        game.currentSubtask;
-
-    if (
-        subtask < 0 ||
-        subtask >= task.subtasks.length
-    ) {
-        return;
-    }
-
-    const miniGame =
-        $("miniGame");
-
-    if (!miniGame) {
-        return;
-    }
-
-    clearSubtaskEffects();
-
-    game.temporaryData =
-        {};
-
-    miniGame.innerHTML = "";
-
-    const world =
-        $("gameWorld");
-
-    if (world) {
-
-        world.dataset.level =
-            level;
-
-        world.dataset.task =
-            game.currentTask;
-
-        world.dataset.subtask =
-            subtask;
-
-        createWorldDecoration(
-            level,
-            game.currentTask,
-            subtask
-        );
-
-    }
-
-    robotMessage(
-        getInstruction(
-            level,
-            game.currentTask,
-            subtask
-        )
-    );
-
-    const header =
-        document.createElement("div");
-
-    header.className =
-        "subtask-header";
-
-    header.innerHTML = `
-
-        <h3>
-            ${task.subtasks[subtask]}
-        </h3>
-
-        <span>
-            STEP ${subtask + 1} / 3
-        </span>
-
-    `;
-
-    miniGame.appendChild(
-        header
-    );
-
-    createMiniGame(
-        level,
-        game.currentTask,
-        subtask
-    );
-
-}
-
-
-/* =========================================================
-   ROBOT INSTRUCTIONS
-========================================================= */
-
-function getInstruction(
-    level,
-    task,
-    subtask
-) {
-
-    const instructions = {
-
-        "1-0-0":
-            "First, connect each matching wire to repair the oxygen circuit.",
-
-        "1-0-1":
-            "Rotate the pipe pieces until the oxygen pipe forms a complete path.",
-
-        "1-0-2":
-            "Move the oxygen level into the green safe zone.",
-
-        "1-1-0":
-            "Choose the material that provides the strongest radiation protection.",
-
-        "1-1-1":
-            "Drag the shield into the protected area.",
-
-        "1-1-2":
-            "Move carefully and dodge the incoming asteroids!",
-
-        "1-2-0":
-            "Find the location receiving enough sunlight.",
-
-        "1-2-1":
-            "Drag the solar panel onto the correct location.",
-
-        "1-2-2":
-            "Connect the solar panel to the battery.",
-
-        "2-0-0":
-            "Adjust the oxygen level until it reaches the safe zone.",
-
-        "2-0-1":
-            "Find the leaking pipe and seal it.",
-
-        "2-0-2":
-            "Press the restart controls in the correct order.",
-
-        "2-1-0":
-            "Place the seeds into the glowing planting spots.",
-
-        "2-1-1":
-            "Give the plants the correct amount of water.",
-
-        "2-1-2":
-            "Set the greenhouse lights to the correct level.",
-
-        "2-2-0":
-            "Find which system is consuming too much electricity.",
-
-        "2-2-1":
-            "Turn off systems that are not essential.",
-
-        "2-2-2":
-            "Balance the electricity between the remaining systems.",
-
-        "3-0-0":
-            "A radiation storm is approaching. Detect the warning.",
-
-        "3-0-1":
-            "Choose the area with the strongest radiation shielding.",
-
-        "3-0-2":
-            "Reach the shelter while avoiding the dangerous radiation zones.",
-
-        "3-1-0":
-            "Count how many food supplies remain.",
-
-        "3-1-1":
-            "Choose enough food for the return journey.",
-
-        "3-1-2":
-            "Distribute food fairly among the crew.",
-
-        "3-2-0":
-            "Check every essential spacecraft system.",
-
-        "3-2-1":
-            "Load the required supplies into the spacecraft.",
-
-        "3-2-2":
-            "Complete the launch sequence in the correct order."
-
-    };
-
-    return (
-        instructions[
-            `${level}-${task}-${subtask}`
-        ] ||
-        "Complete the challenge carefully, Cadet!"
-    );
-
-}
-
-
-/* =========================================================
-   WORLD DECORATIONS
-========================================================= */
-
-function createWorldDecoration(
-    level,
-    task,
-    subtask
-) {
-
-    const object =
-        $("worldObject");
-
-    if (!object) {
-        return;
-    }
-
-    object.innerHTML = "";
-
-    object.style.left =
-        `${15 + Math.random() * 65}%`;
-
-    object.style.bottom =
-        `${70 + Math.random() * 70}px`;
-
-    const decorations = {
-
-        "1-0":
-            ["🛰️", "🔧", "🫁"],
-
-        "1-1":
-            ["🛡️", "☄️", "🌕"],
-
-        "1-2":
-            ["☀️", "🔋", "🛰️"],
-
-        "2-0":
-            ["🫁", "🔧", "🎛️"],
-
-        "2-1":
-            ["🌱", "💧", "💡"],
-
-        "2-2":
-            ["⚡", "🔌", "🔋"],
-
-        "3-0":
-            ["☢️", "🛡️", "🏠"],
-
-        "3-1":
-            ["🍎", "📦", "🥫"],
-
-        "3-2":
-            ["🛰️", "📦", "🚀"]
-
-    };
-
-    const key =
-        `${level}-${task}`;
-
-    const decoration =
-        decorations[key];
-
-    if (
-        decoration &&
-        decoration[subtask]
-    ) {
-
-        object.textContent =
-            decoration[subtask];
-
-    } else {
-
-        object.textContent =
-            "✨";
-
-    }
-
-}
-
-
-/* =========================================================
-   MINI GAME FACTORY
-========================================================= */
-
-function createMiniGame(
-    level,
-    task,
-    subtask
-) {
-
-    if (level === 1 && task === 0) {
-
-        createOxygenGame(subtask);
-        return;
-
-    }
-
-    if (level === 1 && task === 1) {
-
-        createRadiationShieldGame(subtask);
-        return;
-
-    }
-
-    if (level === 1 && task === 2) {
-
-        createPowerGame(subtask);
-        return;
-
-    }
-
-    if (level === 2 && task === 0) {
-
-        createLifeSupportGame(subtask);
-        return;
-
-    }
-
-    if (level === 2 && task === 1) {
-
-        createFoodGrowingGame(subtask);
-        return;
-
-    }
-
-    if (level === 2 && task === 2) {
-
-        createSavePowerGame(subtask);
-        return;
-
-    }
-
-    if (level === 3 && task === 0) {
-
-        createRadiationStormGame(subtask);
-        return;
-
-    }
-
-    if (level === 3 && task === 1) {
-
-        createFoodSupplyGame(subtask);
-        return;
-
-    }
-
-    if (level === 3 && task === 2) {
-
-        createLaunchGame(subtask);
-        return;
-
-    }
-
-}
-
-
-/* =========================================================
-   GENERIC SUBTASK COMPLETION
-========================================================= */
-
-function completeSubtask() {
-
-    if (
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    clearSubtaskEffects();
-
-    const energyOK =
-        changeEnergy(
-            -7,
-            true
-        );
-
-    if (
-        !energyOK ||
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    game.currentSubtask++;
-
-    if (
-        game.currentSubtask >= 3
-    ) {
-
-        completeCurrentTask();
-
-        return;
-
-    }
-
-    renderSubtask();
-
-}
-
-
-/* =========================================================
-   TASK 1 - OXYGEN SYSTEM
-========================================================= */
-
-function createOxygenGame(subtask) {
-
-    if (subtask === 0) {
-
-        const board =
-            document.createElement("div");
-
-        board.className =
-            "wire-board";
-
-        const colors =
-            ["🔴", "🔵", "🟢", "🟡"];
-
-        colors.forEach(color => {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "wire";
-
-            button.textContent =
-                color;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        button.classList.contains(
-                            "connected"
-                        )
-                    ) {
-                        return;
-                    }
-
-                    button.classList.add(
-                        "connected"
-                    );
-
-                    const energyOK =
-                        changeEnergy(-1);
-
-                    if (
-                        !energyOK ||
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    const connected =
-                        document.querySelectorAll(
-                            ".wire.connected"
-                        ).length;
-
-                    if (
-                        connected === 4
-                    ) {
-
-                        robotMessage(
-                            "Excellent! The oxygen circuit is working."
-                        );
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-            board.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            board
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "pipe-grid";
-
-        for (
-            let i = 0;
-            i < 8;
-            i++
-        ) {
-
-            const pipe =
-                document.createElement("button");
-
-            pipe.className =
-                "pipe";
-
-            pipe.textContent =
-                i % 2 === 0
-                    ? "╋"
-                    : "┗";
-
-            pipe.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        pipe.dataset.rotated === "true"
-                    ) {
-                        return;
-                    }
-
-                    pipe.dataset.rotated =
-                        "true";
-
-                    pipe.style.transform =
-                        `rotate(${
-                            Math.floor(
-                                Math.random() * 4
-                            ) * 90
-                        }deg)`;
-
-                    const energyOK =
-                        changeEnergy(-1);
-
-                    if (
-                        !energyOK ||
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    const pipes =
-                        [
-                            ...grid.querySelectorAll(
-                                ".pipe"
-                            )
-                        ];
-
-                    if (
-                        pipes.every(
-                            p =>
-                                p.dataset.rotated === "true"
-                        )
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                pipe
-            );
-
-        }
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const container =
-            document.createElement("div");
-
-        container.className =
-            "oxygen-control";
-
-        container.innerHTML = `
-
-            <div class="gauge">
-
-                <div class="gauge-safe"></div>
-
-                <div
-                    class="gauge-value"
-                    id="oxygenValue"
-                >
-                    50%
-                </div>
-
-            </div>
-
-            <input
-                id="oxygenSlider"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-            >
-
-            <p class="instruction-text">
-                Safe zone: 35% - 65%
-            </p>
-
-        `;
-
-        $("miniGame").appendChild(
-            container
-        );
-
-        const slider =
-            $("oxygenSlider");
-
-        if (!slider) {
-            return;
-        }
-
-        slider.addEventListener(
-            "input",
-            () => {
-
-                safeText(
-                    "oxygenValue",
-                    `${slider.value}%`
-                );
-
-            }
-        );
-
-        const button =
-            createActionButton(
-                "SET OXYGEN",
-                () => {
-
-                    const value =
-                        Number(
-                            slider.value
-                        );
-
-                    if (
-                        value >= 35 &&
-                        value <= 65
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "The oxygen level is outside the safe zone."
-                        );
-
-                    }
-
-                }
-            );
-
-        container.appendChild(
-            button
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   TASK 2 - RADIATION SHIELDING
-========================================================= */
-
-function createRadiationShieldGame(subtask) {
-
-    if (subtask === 0) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "material-grid";
-
-        const materials = [
-            ["🧱", "Lead", true],
-            ["📦", "Cardboard", false],
-            ["🧻", "Paper", false]
-        ];
-
-        materials.forEach(material => {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "material";
-
-            button.innerHTML =
-                `${material[0]}<br>${material[1]}`;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        material[2]
-                    ) {
-
-                        button.classList.add(
-                            "correct"
-                        );
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "That material is too weak for radiation protection."
-                        );
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const area =
-            document.createElement("div");
-
-        area.className =
-            "shield-zone";
-
-        area.innerHTML = `
-
-            <div
-                class="draggable-shield"
-                draggable="true"
-            >
-                🛡️ SHIELD
-            </div>
-
-            <div
-                class="drop-zone"
-                id="shieldDrop"
-            >
-                DROP HERE
-            </div>
-
-        `;
-
-        $("miniGame").appendChild(
-            area
-        );
-
-        const shield =
-            area.querySelector(
-                ".draggable-shield"
-            );
-
-        const drop =
-            $("shieldDrop");
-
-        if (!shield || !drop) {
-            return;
-        }
-
-        shield.addEventListener(
-            "dragstart",
-            event => {
-
-                if (event.dataTransfer) {
-
-                    event.dataTransfer.setData(
-                        "text/plain",
-                        "shield"
-                    );
-
-                }
-
-            }
-        );
-
-        drop.addEventListener(
-            "dragover",
-            event => {
-
-                event.preventDefault();
-
-            }
-        );
-
-        drop.addEventListener(
-            "drop",
-            event => {
-
-                event.preventDefault();
-
-                if (
-                    game.taskCompleted
-                ) {
-                    return;
-                }
-
-                drop.textContent =
-                    "🛡️ SHIELD PLACED";
-
-                drop.style.borderColor =
-                    "#72e6a5";
-
-                completeSubtask();
-
-            }
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const zone =
-            document.createElement("div");
-
-        zone.className =
-            "asteroid-zone";
-
-        zone.innerHTML = `
-
-            <button id="dodgeButton">
-                🏃 DODGE
-            </button>
-
-        `;
-
-        $("miniGame").appendChild(
-            zone
-        );
-
-        const dodgeButton =
-            $("dodgeButton");
-
-        if (!dodgeButton) {
-            return;
-        }
-
-        let dodged = 0;
-
-        const spawn =
-            setInterval(() => {
-
-                if (
-                    game.taskCompleted
-                ) {
-                    return;
-                }
-
-                const asteroid =
-                    document.createElement("div");
-
-                asteroid.className =
-                    "asteroid";
-
-                asteroid.textContent =
-                    "☄️";
-
-                asteroid.style.top =
-                    `${Math.random() * 60}px`;
-
-                asteroid.style.left =
-                    "100%";
-
-                zone.appendChild(
-                    asteroid
-                );
-
-                setTimeout(() => {
-
-                    if (
-                        asteroid.parentNode
-                    ) {
-                        asteroid.remove();
-                    }
-
-                }, 2000);
-
-            }, 800);
-
-        game.temporaryData.interval =
-            spawn;
-
-        dodgeButton.addEventListener(
-            "click",
-            () => {
-
-                if (
-                    game.taskCompleted
-                ) {
-                    return;
-                }
-
-                dodged++;
-
-                if (
-                    dodged >= 8
-                ) {
-
-                    clearInterval(
-                        spawn
-                    );
-
-                    game.temporaryData.interval =
-                        null;
-
-                    completeSubtask();
-
-                }
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   TASK 3 - GENERATE POWER
-========================================================= */
-
-function createPowerGame(subtask) {
-
-    if (subtask === 0) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "location-grid";
-
-        for (
-            let i = 0;
-            i < 8;
-            i++
-        ) {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "location";
-
-            button.textContent =
-                i === 5
-                    ? "☀️"
-                    : "🌑";
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        i === 5
-                    ) {
-
-                        button.classList.add(
-                            "correct"
-                        );
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "This location does not receive enough sunlight."
-                        );
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        }
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const area =
-            document.createElement("div");
-
-        area.className =
-            "panel-area";
-
-        area.innerHTML = `
-
-            <div
-                class="solar-panel"
-                id="solarPanel"
-                draggable="true"
-                style="left:20px;top:30px;"
-            >
-                ☀️ SOLAR PANEL
-            </div>
-
-            <div
-                class="drop-zone"
-                id="panelDrop"
-                style="position:absolute;right:30px;top:25px;"
-            >
-                PANEL ZONE
-            </div>
-
-        `;
-
-        $("miniGame").appendChild(
-            area
-        );
-
-        const panel =
-            $("solarPanel");
-
-        const drop =
-            $("panelDrop");
-
-        if (!panel || !drop) {
-            return;
-        }
-
-        panel.addEventListener(
-            "dragstart",
-            event => {
-
-                if (event.dataTransfer) {
-
-                    event.dataTransfer.setData(
-                        "text/plain",
-                        "panel"
-                    );
-
-                }
-
-            }
-        );
-
-        drop.addEventListener(
-            "dragover",
-            event => {
-
-                event.preventDefault();
-
-            }
-        );
-
-        drop.addEventListener(
-            "drop",
-            event => {
-
-                event.preventDefault();
-
-                if (
-                    game.taskCompleted
-                ) {
-                    return;
-                }
-
-                drop.textContent =
-                    "☀️ PANEL READY";
-
-                completeSubtask();
-
-            }
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const container =
-            document.createElement("div");
-
-        container.className =
-            "power-connection";
-
-        container.innerHTML = `
-
-            <button class="power-node">
-                ☀️
-            </button>
-
-            <span>
-                ───── 🔌 ─────
-            </span>
-
-            <button class="power-node">
-                🔋
-            </button>
-
-        `;
-
-        $("miniGame").appendChild(
-            container
-        );
-
-        const nodes =
-            container.querySelectorAll(
-                ".power-node"
-            );
-
-        nodes.forEach(node => {
-
-            node.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    node.classList.add(
-                        "connected"
-                    );
-
-                    if (
-                        [...nodes].every(
-                            n =>
-                                n.classList.contains(
-                                    "connected"
-                                )
-                        )
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-        });
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 2 - LIFE SUPPORT
-========================================================= */
-
-function createLifeSupportGame(subtask) {
-
-    if (subtask === 0) {
-
-        createOxygenGame(2);
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "location-grid";
-
-        const leaks = [
-            "🔧 Pipe A",
-            "🔧 Pipe B",
-            "💨 Pipe C",
-            "🔧 Pipe D"
-        ];
-
-        leaks.forEach(
-            (pipe, index) => {
-
-                const button =
-                    document.createElement("button");
-
-                button.className =
-                    "location";
-
-                button.textContent =
-                    pipe;
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        if (
-                            game.taskCompleted
-                        ) {
-                            return;
-                        }
-
-                        if (
-                            index === 2
-                        ) {
-
-                            button.classList.add(
-                                "correct"
-                            );
-
-                            button.textContent =
-                                "✅ SEALED";
-
-                            completeSubtask();
-
-                        } else {
-
-                            wrongAttempt(
-                                "No leak here. Keep looking!"
-                            );
-
-                        }
-
-                    }
-                );
-
-                grid.appendChild(
-                    button
-                );
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const container =
-            document.createElement("div");
-
-        container.className =
-            "life-support";
-
-        const sequence =
-            [2, 0, 1];
-
-        game.temporaryData.sequence =
-            [];
-
-        const display =
-            document.createElement("div");
-
-        display.className =
-            "sequence-display";
-
-        display.textContent =
-            "Restart sequence: 3 controls";
-
-        container.appendChild(
-            display
-        );
-
-        ["⚡", "🫁", "🔋"].forEach(
-            (icon, index) => {
-
-                const button =
-                    document.createElement("button");
-
-                button.className =
-                    "control-button";
-
-                button.textContent =
-                    icon;
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        if (
-                            game.taskCompleted
-                        ) {
-                            return;
-                        }
-
-                        const current =
-                            game.temporaryData.sequence.length;
-
-                        if (
-                            index === sequence[current]
-                        ) {
-
-                            game.temporaryData.sequence.push(
-                                index
-                            );
-
-                            button.style.borderColor =
-                                "#72e6a5";
-
-                            if (
-                                game.temporaryData.sequence.length ===
-                                sequence.length
-                            ) {
-
-                                completeSubtask();
-
-                            }
-
-                        } else {
-
-                            game.temporaryData.sequence =
-                                [];
-
-                            wrongAttempt(
-                                "Wrong control. The sequence reset!"
-                            );
-
-                        }
-
-                    }
-                );
-
-                container.appendChild(
-                    button
-                );
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            container
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 2 - GROW FOOD
-========================================================= */
-
-function createFoodGrowingGame(subtask) {
-
-    if (subtask === 0) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "seed-grid";
-
-        for (
-            let i = 0;
-            i < 8;
-            i++
-        ) {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "seed-slot";
-
-            button.textContent =
-                "🌱";
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted ||
-                        button.dataset.planted === "true"
-                    ) {
-                        return;
-                    }
-
-                    button.dataset.planted =
-                        "true";
-
-                    button.style.borderColor =
-                        "#72e6a5";
-
-                    const planted =
-                        grid.querySelectorAll(
-                            ".seed-slot[data-planted='true']"
-                        ).length;
-
-                    if (
-                        planted >= 4
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        }
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const controls =
-            document.createElement("div");
-
-        controls.className =
-            "water-controls";
-
-        [1, 2, 3, 4].forEach(
-            amount => {
-
-                const button =
-                    document.createElement("button");
-
-                button.className =
-                    "water-button";
-
-                button.textContent =
-                    `💧 ${amount}`;
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        if (
-                            game.taskCompleted
-                        ) {
-                            return;
-                        }
-
-                        if (
-                            amount === 2
-                        ) {
-
-                            button.style.borderColor =
-                                "#72e6a5";
-
-                            completeSubtask();
-
-                        } else {
-
-                            wrongAttempt(
-                                "That amount is not quite right."
-                            );
-
-                        }
-
-                    }
-                );
-
-                controls.appendChild(
-                    button
-                );
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            controls
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const slider =
-            document.createElement("input");
-
-        slider.type =
-            "range";
-
-        slider.min =
-            "0";
-
-        slider.max =
-            "100";
-
-        slider.value =
-            "50";
-
-        slider.style.width =
-            "80%";
-
-        const label =
-            document.createElement("p");
-
-        label.className =
-            "instruction-text";
-
-        label.textContent =
-            "Greenhouse light: 50%";
-
-        slider.addEventListener(
-            "input",
-            () => {
-
-                label.textContent =
-                    `Greenhouse light: ${slider.value}%`;
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            label
-        );
-
-        $("miniGame").appendChild(
-            slider
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "SET LIGHTS",
-                () => {
-
-                    const value =
-                        Number(slider.value);
-
-                    if (
-                        value >= 45 &&
-                        value <= 55
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "The plants need a medium amount of light."
-                        );
-
-                    }
-
-                }
-            )
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 2 - SAVE POWER
-========================================================= */
-
-function createSavePowerGame(subtask) {
-
-    const systems = [
-
-        "🌡️ Heater",
-        "💡 Lights",
-        "🛰️ Scanner",
-        "🌱 Greenhouse",
-        "📡 Radio",
-        "🫁 Life Support"
-
-    ];
-
-
-    if (subtask === 0) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "power-system";
-
-        systems.forEach(
-            (system, index) => {
-
-                const button =
-                    document.createElement("button");
-
-                button.textContent =
-                    system;
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        if (
-                            game.taskCompleted
-                        ) {
-                            return;
-                        }
-
-                        if (
-                            index === 2
-                        ) {
-
-                            button.style.borderColor =
-                                "#72e6a5";
-
-                            completeSubtask();
-
-                        } else {
-
-                            wrongAttempt(
-                                "This system is not using too much power."
-                            );
-
-                        }
-
-                    }
-                );
-
-                grid.appendChild(
-                    button
-                );
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "power-system";
-
-        systems.forEach(system => {
-
-            const button =
-                document.createElement("button");
-
-            button.textContent =
-                system;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    button.classList.toggle(
-                        "off"
-                    );
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "SAVE POWER",
-                () => {
-
-                    const off =
-                        grid.querySelectorAll(
-                            "button.off"
-                        ).length;
-
-                    if (
-                        off >= 3
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "Turn off a few more non-essential systems."
-                        );
-
-                    }
-
-                }
-            )
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const systemsBox =
-            document.createElement("div");
-
-        systemsBox.className =
-            "power-system";
-
-        for (
-            let i = 0;
-            i < 3;
-            i++
-        ) {
-
-            const button =
-                document.createElement("button");
-
-            button.textContent =
-                `⚡ SYSTEM ${i + 1}`;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    button.classList.toggle(
-                        "off"
-                    );
-
-                    const active =
-                        systemsBox.querySelectorAll(
-                            "button:not(.off)"
-                        ).length;
-
-                    if (
-                        active === 2
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-            systemsBox.appendChild(
-                button
-            );
-
-        }
-
-        $("miniGame").appendChild(
-            systemsBox
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 3 - RADIATION STORM
-========================================================= */
-
-function createRadiationStormGame(subtask) {
-
-    if (subtask === 0) {
-
-        const button =
-            createActionButton(
-                "📡 SCAN FOR STORM",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    button.textContent =
-                        "☢️ STORM DETECTED!";
-
-                    button.style.borderColor =
-                        "#72e6a5";
-
-                    completeSubtask();
-
-                }
-            );
-
-        $("miniGame").appendChild(
-            button
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "safe-zone-grid";
-
-        const zones = [
-
-            ["Zone A", false],
-            ["Zone B", true],
-            ["Zone C", false]
-
-        ];
-
-        zones.forEach(zone => {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "safe-zone";
-
-            button.textContent =
-                `🛡️ ${zone[0]}`;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        zone[1]
-                    ) {
-
-                        button.classList.add(
-                            "safe"
-                        );
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "The radiation level is too high here."
-                        );
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const button =
-            createActionButton(
-                "🏃 RUN TO SHELTER",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    let progress =
-                        Number(
-                            button.dataset.progress || 0
-                        );
-
-                    progress += 25;
-
-                    button.dataset.progress =
-                        progress;
-
-                    button.textContent =
-                        `🏃 REACHING SHELTER ${progress}%`;
-
-                    if (
-                        progress >= 100
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-        $("miniGame").appendChild(
-            button
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 3 - FOOD SUPPLIES
-========================================================= */
-
-function createFoodSupplyGame(subtask) {
-
-    if (subtask === 0) {
-
-        const counter =
-            document.createElement("div");
-
-        counter.className =
-            "food-counter";
-
-        counter.innerHTML = `
-
-            <div class="food-number">
-                🍎 🍎 🍎 🍎 🍎
-            </div>
-
-            <p class="instruction-text">
-                Count the remaining food supplies.
-            </p>
-
-        `;
-
-        $("miniGame").appendChild(
-            counter
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "COUNT: 5",
-                () => {
-
-                    completeSubtask();
-
-                }
-            )
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "food-options";
-
-        const foods = [
-
-            ["🍎", true],
-            ["🥫", true],
-            ["🍕", false],
-            ["🍰", false]
-
-        ];
-
-        foods.forEach(food => {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "food-item";
-
-            button.textContent =
-                food[0];
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        food[1]
-                    ) {
-
-                        button.classList.toggle(
-                            "selected"
-                        );
-
-                    } else {
-
-                        wrongAttempt(
-                            "That food is not suitable for the journey."
-                        );
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "PACK FOOD",
-                () => {
-
-                    const selected =
-                        grid.querySelectorAll(
-                            ".food-item.selected"
-                        ).length;
-
-                    if (
-                        selected === 2
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "Choose the two essential food supplies."
-                        );
-
-                    }
-
-                }
-            )
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const slider =
-            document.createElement("input");
-
-        slider.type =
-            "range";
-
-        slider.min =
-            "0";
-
-        slider.max =
-            "100";
-
-        slider.value =
-            "50";
-
-        slider.style.width =
-            "80%";
-
-        const label =
-            document.createElement("p");
-
-        label.className =
-            "instruction-text";
-
-        label.textContent =
-            "Crew distribution: 50 / 50";
-
-        slider.addEventListener(
-            "input",
-            () => {
-
-                label.textContent =
-                    `Crew distribution: ${slider.value} / ${
-                        100 - Number(slider.value)
-                    }`;
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            label
-        );
-
-        $("miniGame").appendChild(
-            slider
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "RATION FOOD",
-                () => {
-
-                    const value =
-                        Number(slider.value);
-
-                    if (
-                        value >= 45 &&
-                        value <= 55
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "Try to keep the food distribution fair."
-                        );
-
-                    }
-
-                }
-            )
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL 3 - LAUNCH
-========================================================= */
-
-function createLaunchGame(subtask) {
-
-    if (subtask === 0) {
-
-        const systems = [
-
-            "🛰️ Navigation",
-            "⛽ Fuel",
-            "🫁 Oxygen",
-            "🔋 Battery"
-
-        ];
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "power-system";
-
-        systems.forEach(system => {
-
-            const button =
-                document.createElement("button");
-
-            button.textContent =
-                system;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    button.classList.add(
-                        "off"
-                    );
-
-                    const checked =
-                        grid.querySelectorAll(
-                            "button.off"
-                        ).length;
-
-                    if (
-                        checked === 4
-                    ) {
-
-                        completeSubtask();
-
-                    }
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        return;
-    }
-
-
-    if (subtask === 1) {
-
-        const grid =
-            document.createElement("div");
-
-        grid.className =
-            "food-options";
-
-        const supplies = [
-
-            "🫁 Oxygen",
-            "🍎 Food",
-            "🔋 Battery",
-            "💎 Toy",
-            "🛠️ Tools",
-            "💧 Water"
-
-        ];
-
-        supplies.forEach(supply => {
-
-            const button =
-                document.createElement("button");
-
-            button.className =
-                "food-item";
-
-            button.textContent =
-                supply;
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    if (
-                        game.taskCompleted
-                    ) {
-                        return;
-                    }
-
-                    button.classList.toggle(
-                        "selected"
-                    );
-
-                }
-            );
-
-            grid.appendChild(
-                button
-            );
-
-        });
-
-        $("miniGame").appendChild(
-            grid
-        );
-
-        $("miniGame").appendChild(
-            createActionButton(
-                "LOAD SUPPLIES",
-                () => {
-
-                    const selected =
-                        grid.querySelectorAll(
-                            ".food-item.selected"
-                        ).length;
-
-                    if (
-                        selected >= 4
-                    ) {
-
-                        completeSubtask();
-
-                    } else {
-
-                        wrongAttempt(
-                            "The spacecraft needs more essential supplies."
-                        );
-
-                    }
-
-                }
-            )
-        );
-
-        return;
-    }
-
-
-    if (subtask === 2) {
-
-        const container =
-            document.createElement("div");
-
-        container.className =
-            "launch-sequence";
-
-        const sequence =
-            [0, 2, 1, 3];
-
-        game.temporaryData.sequence =
-            [];
-
-        const icons = [
-            "🔑",
-            "⛽",
-            "🔋",
-            "🚀"
-        ];
-
-        icons.forEach(
-            (icon, index) => {
-
-                const button =
-                    document.createElement("button");
-
-                button.className =
-                    "launch-step";
-
-                button.textContent =
-                    icon;
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        if (
-                            game.taskCompleted
-                        ) {
-                            return;
-                        }
-
-                        const current =
-                            game.temporaryData.sequence.length;
-
-                        if (
-                            index === sequence[current]
-                        ) {
-
-                            button.classList.add(
-                                "completed"
-                            );
-
-                            game.temporaryData.sequence.push(
-                                index
-                            );
-
-                            if (
-                                game.temporaryData.sequence.length ===
-                                sequence.length
-                            ) {
-
-                                completeSubtask();
-
-                            }
-
-                        } else {
-
-                            game.temporaryData.sequence =
-                                [];
-
-                            container
-                                .querySelectorAll(
-                                    ".launch-step"
-                                )
-                                .forEach(
-                                    b => {
-
-                                        b.classList.remove(
-                                            "completed"
-                                        );
-
-                                    }
-                                );
-
-                            wrongAttempt(
-                                "Launch sequence reset. Try the correct order!"
-                            );
-
-                        }
-
-                    }
-                );
-
-                container.appendChild(
-                    button
-                );
-
-            }
-        );
-
-        $("miniGame").appendChild(
-            container
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ACTION BUTTON
-========================================================= */
-
-function createActionButton(
-    text,
-    callback
-) {
-
-    const button =
-        document.createElement("button");
-
-    button.className =
-        "primary-button";
-
-    button.style.marginTop =
-        "15px";
-
-    button.textContent =
-        text;
-
-    button.addEventListener(
-        "click",
-        callback
-    );
-
-    return button;
-
-}
-
-
-/* =========================================================
-   WRONG ATTEMPT
-========================================================= */
-
-function wrongAttempt(
-    message
-) {
-
-    if (
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    robotMessage(
-        message
-    );
-
-    /*
-       changeEnergy already records the energy spent.
-       No second manual energy deduction here.
-    */
-
-    changeEnergy(
-        -5
-    );
-
-}
-
-
-/* =========================================================
-   COMPLETE CURRENT TASK
-========================================================= */
-
-function completeCurrentTask() {
-
-    if (
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    game.taskCompleted =
-        true;
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    clearSubtaskEffects();
-
-    const xpGain =
-        25;
-
-    gainExperience(
-        xpGain
-    );
-
-    /*
-       The final task cost should not trigger
-       a failure after the task is already completed.
-    */
-
-    changeEnergy(
-        -5,
-        false
-    );
-
-    const taskList =
-        game.completedTasks[
-            game.currentLevel
-        ];
-
-    if (
-        !taskList.includes(
-            game.currentTask
-        )
-    ) {
-
-        taskList.push(
-            game.currentTask
-        );
-
-    }
-
-    showCompletionMessage(
-        xpGain
-    );
-
-}
-
-
-/* =========================================================
-   COMPLETION MESSAGE
-========================================================= */
-
-function showCompletionMessage(
-    xpGain
-) {
-
-    const task =
-        levels[
-            game.currentLevel
-        ].tasks[
-            game.currentTask
-        ];
-
-    safeText(
-        "modalIcon",
-        task.icon
-    );
-
-    safeText(
-        "modalTitle",
-        "Great Job, Cadet! 🎉"
-    );
-
-    safeText(
-        "modalText",
-        getCompletionMessage(
-            game.currentLevel,
-            game.currentTask
-        )
-    );
-
-    const modalStats =
-        $("modalStats");
-
-    if (modalStats) {
-
-        modalStats.innerHTML = `
-
-            <div>
-                ⚡ Energy
-                <strong>
-                    -${game.taskEnergySpent}
-                </strong>
-            </div>
-
-            <div>
-                ⭐ Experience
-                <strong>
-                    +${xpGain} XP
-                </strong>
-            </div>
-
-        `;
-
-    }
-
-    safeText(
-        "modalButton",
-        "CONTINUE 🚀"
-    );
-
-    const modal =
-        $("messageModal");
-
-    if (modal) {
-
-        modal.classList.remove(
-            "hidden"
-        );
-
-    }
-
-}
-
-
-function getCompletionMessage(
-    level,
-    task
-) {
-
-    const messages = {
-
-        "1-0":
-            "Amazing! Your oxygen system is safe and ready. You're learning fast!",
-
-        "1-1":
-            "Fantastic shielding work! You protected yourself from dangerous radiation.",
-
-        "1-2":
-            "Excellent! Your solar panels are producing power. Earth training complete!",
-
-        "2-0":
-            "Great work! The Moon base life-support system is running safely.",
-
-        "2-1":
-            "Wonderful! Your little Moon greenhouse is growing food for the crew.",
-
-        "2-2":
-            "Excellent power management! You saved enough electricity for the base.",
-
-        "3-0":
-            "You found shelter before the radiation storm. Great astronaut instincts!",
-
-        "3-1":
-            "Perfect rationing! The crew has enough food for the journey home.",
-
-        "3-2":
-            "All launch systems are ready. It's time to go home!"
-
-    };
-
-    return (
-        messages[
-            `${level}-${task}`
-        ] ||
-        "Mission task successfully completed!"
-    );
-
-}
-
-
-/* =========================================================
-   MODAL CONTINUE
-========================================================= */
-
-const modalButton =
-    $("modalButton");
-
-if (modalButton) {
-
-    modalButton.addEventListener(
-        "click",
-        continueAfterCompletion
-    );
-
-}
-
-
-function continueAfterCompletion() {
-
-    const modal =
-        $("messageModal");
-
-    if (modal) {
-
-        modal.classList.add(
-            "hidden"
-        );
-
-    }
-
-    if (
-        game.currentLevel === 3 &&
-        game.currentTask === 2
-    ) {
-
-        missionComplete();
-
-        return;
-
-    }
-
-    const taskCount =
-        levels[
-            game.currentLevel
-        ].tasks.length;
-
-    if (
-        game.currentTask <
-        taskCount - 1
-    ) {
-
-        renderTaskScreen();
-
-        showScreen(
-            "taskScreen"
-        );
-
-        return;
-
-    }
-
-    finishLevel();
-
-}
-
-
-/* =========================================================
-   FINISH LEVEL
-========================================================= */
-
-function finishLevel() {
-
-    const levelXP =
-        50;
-
-    gainExperience(
-        levelXP
-    );
-
-    if (
-        game.currentLevel < 3
-    ) {
-
-        game.unlockedLevel =
-            game.currentLevel + 1;
-
-        game.energy =
-            100;
-
-        updateProfile();
-
-        showLevelCompleteTransition();
-
-    } else {
-
-        missionComplete();
-
-    }
-
-}
-
-
-/* =========================================================
-   LEVEL TRANSITION
-========================================================= */
-
-function showLevelCompleteTransition() {
-
-    safeText(
-        "countdownNumber",
-        "🚀"
-    );
-
-    safeText(
-        "countdownCaption",
-        "Level complete!"
-    );
-
-    safeText(
-        "countdownMessage",
-        game.currentLevel === 1
-            ? "Launching toward the Moon..."
-            : "Preparing the final mission..."
-    );
-
-    showScreen(
-        "countdownScreen"
-    );
-
-    const rocket =
-        $("countdownRocket");
-
-    if (rocket) {
-
-        rocket.style.transform =
-            "translateY(0)";
-
-        setTimeout(() => {
-
-            rocket.style.transform =
-                "translateY(-350px)";
-
-        }, 500);
-
-    }
-
-    setTimeout(() => {
-
-        openLevel(
-            game.currentLevel + 1
-        );
-
-    }, 2200);
-
-}
-
-
-/* =========================================================
-   FAILURE
-========================================================= */
-
-function failCurrentTask(
-    reason
-) {
-
-    if (
-        game.taskCompleted
-    ) {
-        return;
-    }
-
-    game.taskCompleted =
-        true;
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    clearSubtaskEffects();
-
-    updateGameplayHUD();
-
-    safeText(
-        "failureText",
-        reason ||
-        "Your energy became too low. Restart the task and try again!"
-    );
-
-    safeText(
-        "failureEnergy",
-        game.energy
-    );
-
-    safeText(
-        "failureXP",
-        game.experience
-    );
-
-    const failureModal =
-        $("failureModal");
-
-    if (failureModal) {
-
-        failureModal.classList.remove(
-            "hidden"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   FAILURE RESTART
-========================================================= */
-
-const failureRestartButton =
-    $("failureRestartButton");
-
-if (failureRestartButton) {
-
-    failureRestartButton.addEventListener(
-        "click",
-        () => {
-
-            const modal =
-                $("failureModal");
-
-            if (modal) {
-
-                modal.classList.add(
-                    "hidden"
-                );
-
-            }
-
-            restartCurrentTask();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   FAILURE EXIT
-========================================================= */
-
-const failureExitButton =
-    $("failureExitButton");
-
-if (failureExitButton) {
-
-    failureExitButton.addEventListener(
-        "click",
-        () => {
-
-            const modal =
-                $("failureModal");
-
-            if (modal) {
-
-                modal.classList.add(
-                    "hidden"
-                );
-
-            }
-
-            clearInterval(
-                game.timerInterval
-            );
-
-            clearSubtaskEffects();
-
-            renderTaskScreen();
-
-            showScreen(
-                "taskScreen"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   RESTART TASK
-========================================================= */
-
-const restartTaskButton =
-    $("restartTaskButton");
-
-if (restartTaskButton) {
-
-    restartTaskButton.addEventListener(
-        "click",
-        restartCurrentTask
-    );
-
-}
-
-
-function restartCurrentTask() {
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    clearSubtaskEffects();
-
-    /*
-       Restarting costs 8 energy.
-    */
-
-    if (
-        game.energy > 0
-    ) {
-
-        game.energy =
-            Math.max(
-                0,
-                game.energy - 8
-            );
-
-    }
-
-    game.currentSubtask =
-        0;
-
-    game.timer =
-        60;
-
-    game.taskCompleted =
-        false;
-
-    game.taskEnergySpent =
-        0;
-
-    game.temporaryData =
-        {};
-
-    updateGameplayHUD();
-
-    /*
-       If energy became zero while restarting,
-       do not immediately create another task.
-    */
-
-    if (
-        game.energy <= 0
-    ) {
-
-        failCurrentTask(
-            "You do not have enough energy to restart this task."
-        );
-
-        return;
-
-    }
-
-    startTask(
-        game.currentTask
-    );
-
-}
-
-
-/* =========================================================
-   EXIT TASK
-========================================================= */
-
-const quitTaskButton =
-    $("quitTaskButton");
-
-if (quitTaskButton) {
-
-    quitTaskButton.addEventListener(
-        "click",
-        () => {
-
-            clearInterval(
-                game.timerInterval
-            );
-
-            game.timerInterval =
-                null;
-
-            clearSubtaskEffects();
-
-            game.taskCompleted =
-                false;
-
-            renderTaskScreen();
-
-            showScreen(
-                "taskScreen"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CLEANUP
-========================================================= */
-
-function clearSubtaskEffects() {
-
-    if (
-        game.temporaryData &&
-        game.temporaryData.interval
-    ) {
-
-        clearInterval(
-            game.temporaryData.interval
-        );
-
-        game.temporaryData.interval =
-            null;
-
-    }
-
-}
-
-
-/* =========================================================
-   MISSION COMPLETE
-========================================================= */
-
-function missionComplete() {
-
-    clearInterval(
-        game.timerInterval
-    );
-
-    game.timerInterval =
-        null;
-
-    clearSubtaskEffects();
-
-    safeText(
-        "finalXP",
-        `${game.experience} XP`
-    );
-
-    safeText(
-        "finalName",
-        game.name
-    );
-
-    showScreen(
-        "missionCompleteScreen"
-    );
-
-}
-
-
-/* =========================================================
-   PLAY AGAIN
-========================================================= */
-
-const playAgainButton =
-    $("playAgainButton");
-
-if (playAgainButton) {
-
-    playAgainButton.addEventListener(
-        "click",
-        () => {
-
-            clearInterval(
-                game.timerInterval
-            );
-
-            game.timerInterval =
-                null;
-
-            clearSubtaskEffects();
-
-            game.energy =
-                100;
-
-            game.experience =
-                0;
-
-            game.unlockedLevel =
-                1;
-
-            game.completedTasks = {
-                1: [],
-                2: [],
-                3: []
-            };
-
-            game.currentLevel =
-                1;
-
-            game.currentTask =
-                0;
-
-            game.currentSubtask =
-                0;
-
-            game.timer =
-                60;
-
-            game.taskEnergySpent =
-                0;
-
-            game.taskCompleted =
-                false;
-
-            game.temporaryData =
-                {};
-
-            updateProfile();
-
-            showScreen(
-                "levelScreen"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   INITIALIZATION
-========================================================= */
-
-hideUnusedUI();
-
-updateCharacterPreview();
-
-createShootingStar();
-
-
-});
